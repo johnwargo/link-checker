@@ -9,8 +9,6 @@
 // Based on: https://www.seancdavis.com/posts/using-nodejs-to-check-for-broken-links/
 // That got me started, then I pulled in more code from the docs
 
-// TODO: Prompt for output scope
-
 import boxen from 'boxen';
 import chalk from 'chalk';
 import fs from 'fs';
@@ -101,6 +99,11 @@ const prompt1: PromptObject[] = [
 
 const prompt2: PromptObject[] = [
   {
+    type: 'text',
+    name: 'outputFile',
+    message: 'Output file root filename (no extension)',
+    initial: DEFAULT_OUTPUT_FILE_ROOT,
+  }, {
     type: 'select',
     name: 'outputType',
     message: 'Output format',
@@ -110,11 +113,6 @@ const prompt2: PromptObject[] = [
       { title: 'Markdown (.md)', value: outputFormat.MARKDOWN },
       { title: 'Text (.txt)', value: outputFormat.TXT },
     ]
-  }, {
-    type: 'text',
-    name: 'outputFile',
-    message: 'Output file root filename (no extension)',
-    initial: DEFAULT_OUTPUT_FILE_ROOT,
   }
 ];
 
