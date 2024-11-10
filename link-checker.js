@@ -1,8 +1,8 @@
 import boxen from 'boxen';
 import chalk from 'chalk';
 import fs from 'fs';
-import path from 'path';
 import { LinkChecker } from "linkinator";
+import path from 'path';
 import prompts from 'prompts';
 var LinkState;
 (function (LinkState) {
@@ -57,10 +57,11 @@ const prompt2 = [
         type: 'select',
         name: 'outputExtension',
         message: 'Output format',
-        initial: 0,
+        initial: 1,
         choices: [
+            { title: 'JSON (.json)', value: '.json' },
             { title: 'Markdown (.md)', value: '.md' },
-            { title: 'JSON (.json)', value: '.json' }
+            { title: 'Text (.txt)', value: '.txt' },
         ]
     }, {
         type: 'text',
