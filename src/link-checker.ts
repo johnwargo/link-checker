@@ -38,7 +38,9 @@ const OutputMap = {
   SKIPPED: chalk.yellow("SKIPPED"),
 };
 
-// enum OutputFormat { MARKDOWN, JSON }
+enum outputFormat { JSON, MARKDOWN, TXT }
+const outputFormats = ['.json', '.md', '.txt'];
+
 enum OutputScope { ALL, OK, BROKEN, SKIPPED }
 
 type RetryInfo = {
@@ -92,13 +94,13 @@ const prompt1: PromptObject[] = [
 const prompt2: PromptObject[] = [
   {
     type: 'select',
-    name: 'outputExtension',
+    name: 'outputType',
     message: 'Output format',
     initial: 1,
     choices: [
-      { title: 'JSON (.json)', value: '.json' },
-      { title: 'Markdown (.md)', value: '.md' },
-      { title: 'Text (.txt)', value: '.txt' },
+      { title: 'JSON (.json)', value: outputFormat.JSON },
+      { title: 'Markdown (.md)', value: outputFormat.MARKDOWN },
+      { title: 'Text (.txt)', value: outputFormat.TXT },
     ]
   }, {
     type: 'text',
@@ -176,9 +178,6 @@ if (config.concurrentRequests < 1) logConfigError('Concurrent requests must be g
 // do we have a valid timeout value?
 if (config.timeoutValue < 1) logConfigError('Timeout value must be greater than 0');
 
-const filePath = path.join(process.cwd(), config.outputFile + config.outputExtension);
-if (debugMode) console.log(`\n${chalk.yellow('Output file path:')} ${filePath}`);
-
 console.log(chalk.yellow('\nStarting scan...\n'));
 const result = await checker.check({
   concurrency: config.concurrentRequests,
@@ -189,11 +188,33 @@ const result = await checker.check({
 
 // write the output to the file
 if (config.saveToFile) {
+
+  // first build the output file path
+  var ext = 'UNKNOWN';
+  var outputBody = '';
+
+  switch (config.outputType) {
+    case outputFormat.JSON:
+      ext = '.json';
+      outputBody = JSON.stringify(result, null, 2);
+      break;
+    case outputFormat.MARKDOWN:
+      ext = '.md';
+      outputBody = '## Link Checker Results\n\n';
+      break;
+    case outputFormat.TXT:
+      ext = '.txt';
+      outputBody = 'Link Checker Results\n\n';
+      break;
+  }
+  const filePath = path.join(process.cwd(), config.outputFile + ext);
+  if (debugMode) console.log(`\n${chalk.yellow('Output file path:')} ${filePath}`);
   console.log();
+
   if (debugMode) console.log(chalk.yellow('Writing output to file...'));
   // TODO: implement alternate output formats
   try {
-    fs.writeFileSync(filePath, JSON.stringify(result, null, 2));
+    fs.writeFileSync(filePath, outputBody);
     console.log(chalk.green('File written successfully: ') + filePath);
   } catch (err) {
     console.log(chalk.red('Error writing output to file'));
