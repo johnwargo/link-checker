@@ -242,8 +242,6 @@ if (config.saveToFile) {
   }
 }
 
-// console.log();
-// console.log(result.passed ? chalk.green('Scan complete') : chalk.red('Scan Failed '));
 console.log(`\nScan Results`);
 console.log('='.repeat(30));
 console.log(chalk.green('Scanned: ') + result.links.length.toLocaleString() + ' links');
