@@ -143,7 +143,7 @@ if (config.saveToFile) {
             break;
         case outputFormat.MARKDOWN:
             ext = '.md';
-            outputBody = '## Link Checker Results\n\n';
+            outputBody = '# Link Checker Results\n\n';
             break;
         case outputFormat.TXT:
             ext = '.txt';
@@ -165,8 +165,10 @@ if (config.saveToFile) {
         console.dir(err);
     }
 }
+const brokenLinksCount = result.links.filter(x => x.state === 'BROKEN');
+const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
 console.log();
 console.log(result.passed ? chalk.green('Scan complete') : chalk.red('Scan Failed '));
 console.log(`Scanned ${result.links.length.toLocaleString()} links`);
-const brokeLinksCount = result.links.filter(x => x.state === 'BROKEN');
-console.log(`Detected ${brokeLinksCount.length.toLocaleString()} broken links.`);
+console.log(`Detected ${brokenLinksCount.length.toLocaleString()} broken links.`);
+console.log(`Detected ${skippedLinksCount.length.toLocaleString()} skipped links.`);
