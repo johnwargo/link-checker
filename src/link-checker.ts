@@ -52,7 +52,6 @@ const checker = new LinkChecker();
 const APP_NAME = 'Link Checker';
 const APP_AUTHOR = 'by John M. Wargo (https://johnwargo.com)';
 
-
 // *****************************************
 // Default Prompt Values
 // *****************************************
