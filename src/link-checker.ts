@@ -200,7 +200,7 @@ if (config.saveToFile) {
       break;
     case outputFormat.MARKDOWN:
       ext = '.md';
-      outputBody = '## Link Checker Results\n\n';
+      outputBody = '# Link Checker Results\n\n';
       break;
     case outputFormat.TXT:
       ext = '.txt';
@@ -212,7 +212,6 @@ if (config.saveToFile) {
   console.log();
 
   if (debugMode) console.log(chalk.yellow('Writing output to file...'));
-  // TODO: implement alternate output formats
   try {
     fs.writeFileSync(filePath, outputBody);
     console.log(chalk.green('File written successfully: ') + filePath);
