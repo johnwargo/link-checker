@@ -6,29 +6,21 @@ import path from 'path';
 import prompts from 'prompts';
 var LinkState;
 (function (LinkState) {
-    LinkState["OK"] = "OK";
     LinkState["BROKEN"] = "BROKEN";
     LinkState["SKIPPED"] = "SKIPPED";
+    LinkState["OK"] = "OK";
 })(LinkState || (LinkState = {}));
-const OutputMap = {
-    OK: chalk.green("OK"),
-    BROKEN: chalk.red("BROKEN"),
-    SKIPPED: chalk.yellow("SKIPPED"),
-};
 var outputFormat;
 (function (outputFormat) {
     outputFormat[outputFormat["JSON"] = 0] = "JSON";
     outputFormat[outputFormat["MARKDOWN"] = 1] = "MARKDOWN";
     outputFormat[outputFormat["TXT"] = 2] = "TXT";
 })(outputFormat || (outputFormat = {}));
-const outputFormats = ['.json', '.md', '.txt'];
-var OutputScope;
-(function (OutputScope) {
-    OutputScope[OutputScope["ALL"] = 0] = "ALL";
-    OutputScope[OutputScope["OK"] = 1] = "OK";
-    OutputScope[OutputScope["BROKEN"] = 2] = "BROKEN";
-    OutputScope[OutputScope["SKIPPED"] = 3] = "SKIPPED";
-})(OutputScope || (OutputScope = {}));
+const OutputMap = {
+    OK: chalk.green("OK"),
+    BROKEN: chalk.red("BROKEN"),
+    SKIPPED: chalk.yellow("SKIPPED"),
+};
 const checker = new LinkChecker();
 const APP_NAME = 'Link Checker';
 const APP_AUTHOR = 'by John M. Wargo (https://johnwargo.com)';
@@ -52,6 +44,16 @@ const prompt1 = [
         name: 'timeoutValue',
         message: 'Timeout value (in milliseconds)',
         initial: DEFAULT_TIMEOUT
+    }, {
+        type: 'multiselect',
+        name: 'outputOptions',
+        message: 'Select output options',
+        choices: [
+            { title: 'OK', value: LinkState.OK, selected: false },
+            { title: 'Broken', value: LinkState.BROKEN, selected: true },
+            { title: 'Skipped', value: LinkState.SKIPPED, selected: true }
+        ],
+        hint: '- Space to select. Return to submit'
     }, {
         type: 'confirm',
         name: 'saveToFile',
@@ -78,10 +80,27 @@ const prompt2 = [
     }
 ];
 checker.on('pagestart', (url) => {
-    console.log(chalk.yellow('Scanning') + `: ${url}`);
+    console.log(`${chalk.blue('Scanning')}: ${url}`);
 });
 checker.on('link', (res) => {
-    console.log(`${OutputMap[res.state]} (${res.status}): ${res.url}`);
+    function logLinkDetails(res) {
+        var statusStr = res.status?.toString().padStart(3, ' ');
+        console.log(`${OutputMap[res.state]} (${statusStr}): ${res.url}`);
+    }
+    switch (res.state) {
+        case LinkState.BROKEN:
+            if (config.outputOptions.includes(LinkState.BROKEN))
+                logLinkDetails(res);
+            break;
+        case LinkState.SKIPPED:
+            if (config.outputOptions.includes(LinkState.SKIPPED))
+                logLinkDetails(res);
+            break;
+        case LinkState.OK:
+            if (config.outputOptions.includes(LinkState.OK))
+                logLinkDetails(res);
+            break;
+    }
 });
 checker.on('retry', (details) => {
     var resStr = chalk.yellow('Retrying:');
@@ -126,6 +145,8 @@ if (config.concurrentRequests < 1)
     logConfigError('Concurrent requests must be greater than 0');
 if (config.timeoutValue < 1)
     logConfigError('Timeout value must be greater than 0');
+if (config.outputOptions.length < 1)
+    logConfigError('You must select at least one output option');
 console.log(chalk.yellow('\nStarting scan...\n'));
 const result = await checker.check({
     concurrency: config.concurrentRequests,
@@ -164,10 +185,13 @@ if (config.saveToFile) {
         console.dir(err);
     }
 }
-console.log();
-console.log(result.passed ? chalk.green('Scan complete') : chalk.red('Scan Failed '));
-console.log(`Scanned ${result.links.length.toLocaleString()} links`);
+console.log(`\nScan Results`);
+console.log('='.repeat(30));
+console.log(chalk.green('Scanned: ') + result.links.length.toLocaleString() + ' links');
 const brokenLinksCount = result.links.filter(x => x.state === 'BROKEN');
-console.log(`Found ${brokenLinksCount.length.toLocaleString()} broken links`);
+if (config.outputOptions.includes(LinkState.BROKEN))
+    console.log(chalk.red('Broken: ') + brokenLinksCount.length.toLocaleString() + ' links');
 const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
-console.log(`Skipped ${skippedLinksCount.length.toLocaleString()} links`);
+if (config.outputOptions.includes(LinkState.SKIPPED))
+    console.log(chalk.yellow('Skipped: ') + skippedLinksCount.length.toLocaleString() + ' links');
+process.exit(0);
