@@ -226,5 +226,5 @@ const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
 console.log();
 console.log(result.passed ? chalk.green('Scan complete') : chalk.red('Scan Failed '));
 console.log(`Scanned ${result.links.length.toLocaleString()} links`);
-console.log(`Found ${brokenLinksCount.length.toLocaleString()} broken links.`);
-console.log(`Skipped ${skippedLinksCount.length.toLocaleString()} links.`);
+console.log(`Found ${brokenLinksCount.length.toLocaleString()} broken links`);
+console.log(`Skipped ${skippedLinksCount.length.toLocaleString()} links`);
