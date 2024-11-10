@@ -153,22 +153,21 @@ if (config.saveToFile) {
     const filePath = path.join(process.cwd(), config.outputFile + ext);
     if (debugMode)
         console.log(`\n${chalk.yellow('Output file path:')} ${filePath}`);
-    console.log();
     if (debugMode)
-        console.log(chalk.yellow('Writing output to file...'));
+        console.log('Writing output to file...');
     try {
         fs.writeFileSync(filePath, outputBody);
-        console.log(chalk.green('File written successfully: ') + filePath);
+        console.log(chalk.green('Results successfully written to file: ') + filePath);
     }
     catch (err) {
         console.log(chalk.red('Error writing output to file'));
         console.dir(err);
     }
 }
-const brokenLinksCount = result.links.filter(x => x.state === 'BROKEN');
-const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
 console.log();
 console.log(result.passed ? chalk.green('Scan complete') : chalk.red('Scan Failed '));
 console.log(`Scanned ${result.links.length.toLocaleString()} links`);
-console.log(`Detected ${brokenLinksCount.length.toLocaleString()} broken links.`);
-console.log(`Detected ${skippedLinksCount.length.toLocaleString()} skipped links.`);
+const brokenLinksCount = result.links.filter(x => x.state === 'BROKEN');
+console.log(`Found ${brokenLinksCount.length.toLocaleString()} broken links`);
+const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
+console.log(`Skipped ${skippedLinksCount.length.toLocaleString()} links`);

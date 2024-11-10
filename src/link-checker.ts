@@ -209,12 +209,10 @@ if (config.saveToFile) {
   }
   const filePath = path.join(process.cwd(), config.outputFile + ext);
   if (debugMode) console.log(`\n${chalk.yellow('Output file path:')} ${filePath}`);
-  console.log();
-
-  if (debugMode) console.log(chalk.yellow('Writing output to file...'));
+  if (debugMode) console.log('Writing output to file...');
   try {
     fs.writeFileSync(filePath, outputBody);
-    console.log(chalk.green('File written successfully: ') + filePath);
+    console.log(chalk.green('Results successfully written to file: ') + filePath);
   } catch (err) {
     console.log(chalk.red('Error writing output to file'));
     console.dir(err);
