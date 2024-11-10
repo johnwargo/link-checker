@@ -2,6 +2,4 @@
 node_modules/
 
 # Files
-link-checker-results.json
-link-checker-results.md
-link-checker-results.txt
+link-checker-results.*
