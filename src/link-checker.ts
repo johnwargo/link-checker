@@ -272,7 +272,7 @@ if (config.saveToFile) {
       break;
     case OutputFormat.MARKDOWN:
       ext = '.md';
-      outputBody = `# Link Checker Results\n\nCreated: ${new Date().toLocaleString()}\n\n`;
+      outputBody = `# Link Checker Results\n\n**Created:** ${new Date().toLocaleString()}\n\n`;
       if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Broken Links', LinkState.BROKEN);
       if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Skipped Links', LinkState.SKIPPED);
       if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'OK Links', LinkState.OK);
