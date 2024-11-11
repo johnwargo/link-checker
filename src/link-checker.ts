@@ -261,8 +261,8 @@ const result = await checker.check({
   timeout: config.timeoutValue
 });
 
-// write the output to the file
 if (config.saveToFile) {
+  // write the output to the file
   var ext = 'UNKNOWN';
   var outputBody = '';
 
@@ -289,6 +289,7 @@ if (config.saveToFile) {
       break;
   }
 
+  // write the file to disk
   const filePath = path.join(process.cwd(), config.outputFile + ext);
   if (debugMode) console.log(`\n${chalk.yellow('Output file path:')} ${filePath}`);
   if (debugMode) console.log('Writing output to file...');
@@ -302,6 +303,7 @@ if (config.saveToFile) {
 
   // are we running in Visual Studio Code?
   if (process.env.TERM_PROGRAM == "vscode") {
+    // then open the file in the editor
     console.log(chalk.blue('\nOpening report in Visual Studio Code'));
     var localFile = '.' + path.sep + path.relative(process.cwd(), filePath);
     try {
