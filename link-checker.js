@@ -223,14 +223,12 @@ if (config.saveToFile) {
                 outputBody += writeFileSection(OutputFormat.TXT, 'Skipped Links', LinkState.SKIPPED);
             if (config.outputOptions.includes(LinkState.OK))
                 outputBody += writeFileSection(OutputFormat.TXT, 'OK Links', LinkState.OK);
-            outputBody += 'Report created by Link Checker (https://github.com/johnwargo/link-checker) by John M. Wargo.\n';
+            outputBody += '---\n\nReport created by Link Checker (https://github.com/johnwargo/link-checker) by John M. Wargo.\n';
             break;
     }
     const filePath = path.join(process.cwd(), config.outputFile + ext);
     if (debugMode)
-        console.log(`\n${chalk.yellow('Output file path:')} ${filePath}`);
-    if (debugMode)
-        console.log('Writing output to file...');
+        console.log(chalk.blue('Writing output to file...'));
     try {
         fs.writeFileSync(filePath, outputBody);
         console.log(chalk.green('Results successfully written to file: ') + filePath);
@@ -240,7 +238,7 @@ if (config.saveToFile) {
         console.dir(err);
     }
     if (process.env.TERM_PROGRAM == "vscode") {
-        console.log(chalk.blue('\nOpening report in Visual Studio Code'));
+        console.log(chalk.blue('Opening report in Visual Studio Code'));
         var localFile = '.' + path.sep + path.relative(process.cwd(), filePath);
         try {
             await execa('code', [localFile]);
@@ -260,4 +258,5 @@ if (config.outputOptions.includes(LinkState.BROKEN))
 const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
 if (config.outputOptions.includes(LinkState.SKIPPED))
     console.log(chalk.yellow('Skipped: ') + skippedLinksCount.length.toLocaleString() + ' links');
+console.log('='.repeat(30));
 process.exit(0);

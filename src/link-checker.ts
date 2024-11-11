@@ -10,7 +10,6 @@
 // That got me started, then I pulled in more code from the docs
 
 // TODO: Local only flag (don't check external links)
-// TODO: Add an HTML output option?
 
 import boxen from 'boxen';
 import chalk from 'chalk';
