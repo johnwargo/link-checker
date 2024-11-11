@@ -9,8 +9,7 @@
 // Based on: https://www.seancdavis.com/posts/using-nodejs-to-check-for-broken-links/
 // That got me started, then I pulled in more code from the docs
 
-// TODO: Local only flag
-// TODO: Figure out why reports have an extra line at the end
+// TODO: Local only flag (don't check external links)
 // TODO: Add an HTML output option?
 
 import boxen from 'boxen';
@@ -121,7 +120,9 @@ const prompt2: PromptObject[] = [
   }
 ];
 
-/* Event Handlers */
+// *****************************************
+// Event Handlers
+// *****************************************
 
 checker.on('pagestart', (url: string) => {
   console.log(`${chalk.blue('Scanning')}: ${url}`);
@@ -158,7 +159,9 @@ const onCancelPrompt = () => {
   process.exit(0);
 };
 
-/* Functions */
+// *****************************************
+// Functions
+// *****************************************
 
 function isValidHttpUrl(urlStr: string): boolean {
   try {
@@ -219,7 +222,9 @@ function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, sec
   return sectionText;
 }
 
-/* Main Program  (execution starts here) */
+// *****************************************
+/*  Main Program  (execution starts here) */
+// *****************************************
 
 console.log(boxen(APP_NAME, { padding: 1 }));
 console.log(`\n${APP_AUTHOR}\n`);
