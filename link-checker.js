@@ -1,5 +1,6 @@
 import boxen from 'boxen';
 import chalk from 'chalk';
+import { execa } from 'execa';
 import fs from 'fs';
 import { LinkChecker } from "linkinator";
 import path from 'path';
@@ -236,6 +237,17 @@ if (config.saveToFile) {
         console.log(chalk.red('Error writing output to file'));
         console.dir(err);
     }
+    if (process.env.TERM_PROGRAM == "vscode") {
+        console.log(chalk.blue('\nOpening report in Visual Studio Code'));
+        var localFile = '.' + path.sep + path.relative(process.cwd(), filePath);
+        try {
+            await execa('code', [localFile]);
+        }
+        catch (err) {
+            console.error(err);
+            process.exit(1);
+        }
+    }
 }
 console.log(`\nScan Results`);
 console.log('='.repeat(30));
@@ -246,7 +258,4 @@ if (config.outputOptions.includes(LinkState.BROKEN))
 const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
 if (config.outputOptions.includes(LinkState.SKIPPED))
     console.log(chalk.yellow('Skipped: ') + skippedLinksCount.length.toLocaleString() + ' links');
-if (process.env.TERM_PROGRAM == "vscode") {
-    console.log(chalk.yellow('\nRunning in Visual Studio Code'));
-}
 process.exit(0);

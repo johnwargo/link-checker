@@ -10,12 +10,12 @@
 // That got me started, then I pulled in more code from the docs
 
 // TODO: Local only flag
-// TODO: write markdown file
-// TODO: write text file
+// TODO: Figure out why reports have an extra line at the end
 // TODO: Add an HTML output option?
 
 import boxen from 'boxen';
 import chalk from 'chalk';
+import { execa } from 'execa';
 import fs from 'fs';
 import { LinkChecker } from "linkinator";
 import path from 'path';
@@ -204,14 +204,14 @@ function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, sec
       sectionText += '|--------|-----|\n';
       for (var link of linksArray) {
         sectionText += `| ${link.status?.toString().padStart(3, ' ')} | ${link.url} |\n`;
-      }    
+      }
       break;
     case OutputFormat.TXT:
       sectionText = sectionHeader + '\n';
       sectionText += '-'.repeat(sectionHeader.length + 5) + '\n';
       for (var link of linksArray) {
         sectionText += `(${link.status?.toString().padStart(3, ' ')}) ${link.url}\n`;
-      }    
+      }
       break;
   }
   sectionText += '\n';
@@ -295,6 +295,18 @@ if (config.saveToFile) {
     console.log(chalk.red('Error writing output to file'));
     console.dir(err);
   }
+
+  // are we running in Visual Studio Code?
+  if (process.env.TERM_PROGRAM == "vscode") {
+    console.log(chalk.blue('\nOpening report in Visual Studio Code'));
+    var localFile = '.' + path.sep + path.relative(process.cwd(), filePath);
+    try {
+      await execa('code', [localFile]);
+    } catch (err) {
+      console.error(err);
+      process.exit(1);
+    }
+  }
 }
 
 console.log(`\nScan Results`);
@@ -308,12 +320,6 @@ if (config.outputOptions.includes(LinkState.BROKEN))
 const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
 if (config.outputOptions.includes(LinkState.SKIPPED))
   console.log(chalk.yellow('Skipped: ') + skippedLinksCount.length.toLocaleString() + ' links');
-
-
-// are we running in Visual Studio Code?
-if (process.env.TERM_PROGRAM == "vscode") {
-  console.log(chalk.yellow('\nRunning in Visual Studio Code'));  
-}
 
 // Have to do this because some requests are still in progress, 
 // but never seem to return
