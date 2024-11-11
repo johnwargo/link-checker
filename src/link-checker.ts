@@ -9,6 +9,11 @@
 // Based on: https://www.seancdavis.com/posts/using-nodejs-to-check-for-broken-links/
 // That got me started, then I pulled in more code from the docs
 
+// TODO: Local only flag
+// TODO: write markdown file
+// TODO: write text file
+// TODO: Add an HTML output option?
+
 import boxen from 'boxen';
 import chalk from 'chalk';
 import fs from 'fs';
