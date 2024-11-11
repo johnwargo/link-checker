@@ -138,11 +138,11 @@ function displayHelpAndExit() {
     process.exit(0);
 }
 function writeFileSection(outputFormat, sectionHeader, section) {
+    var sectionText = '';
     var linksArray = result.links.filter(x => x.state === section);
     if (linksArray.length < 1)
         return '';
     linksArray = linksArray.sort((a, b) => a.url.localeCompare(b.url));
-    var sectionText = '';
     switch (outputFormat) {
         case OutputFormat.MARKDOWN:
             sectionText = `## ${sectionHeader}\n\n`;
@@ -205,13 +205,14 @@ if (config.saveToFile) {
             break;
         case OutputFormat.MARKDOWN:
             ext = '.md';
-            outputBody = `# Link Checker Results\n\nCreated: ${new Date().toLocaleString()}\n\n`;
+            outputBody = `# Link Checker Results\n\n**Created:** ${new Date().toLocaleString()}\n\n`;
             if (config.outputOptions.includes(LinkState.BROKEN))
                 outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Broken Links', LinkState.BROKEN);
             if (config.outputOptions.includes(LinkState.SKIPPED))
                 outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Skipped Links', LinkState.SKIPPED);
             if (config.outputOptions.includes(LinkState.OK))
                 outputBody += writeFileSection(OutputFormat.MARKDOWN, 'OK Links', LinkState.OK);
+            outputBody += '---\n\nReport created by <a href="https://github.com/johnwargo/link-checker" target="_blank">Link Checker</a> by John M. Wargo.\n';
             break;
         case OutputFormat.TXT:
             ext = '.txt';
@@ -222,6 +223,7 @@ if (config.saveToFile) {
                 outputBody += writeFileSection(OutputFormat.TXT, 'Skipped Links', LinkState.SKIPPED);
             if (config.outputOptions.includes(LinkState.OK))
                 outputBody += writeFileSection(OutputFormat.TXT, 'OK Links', LinkState.OK);
+            outputBody += 'Report created by Link Checker (https://github.com/johnwargo/link-checker) by John M. Wargo.\n';
             break;
     }
     const filePath = path.join(process.cwd(), config.outputFile + ext);

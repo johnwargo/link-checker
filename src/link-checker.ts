@@ -188,6 +188,8 @@ function displayHelpAndExit() {
 }
 
 function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, section: LinkState): string {
+  var sectionText: string = '';
+
   // get the links array for the section
   var linksArray = result.links.filter(x => x.state === section);
   // do we have any results?  No? then return an empty string
@@ -196,7 +198,6 @@ function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, sec
   // sort the array
   linksArray = linksArray.sort((a, b) => a.url.localeCompare(b.url));
 
-  var sectionText: string = '';
   switch (outputFormat) {
     case OutputFormat.MARKDOWN:
       sectionText = `## ${sectionHeader}\n\n`;
@@ -276,6 +277,7 @@ if (config.saveToFile) {
       if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Broken Links', LinkState.BROKEN);
       if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Skipped Links', LinkState.SKIPPED);
       if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'OK Links', LinkState.OK);
+      outputBody += '---\n\nReport created by <a href="https://github.com/johnwargo/link-checker" target="_blank">Link Checker</a> by John M. Wargo.\n';
       break;
     case OutputFormat.TXT:
       ext = '.txt';
@@ -283,8 +285,10 @@ if (config.saveToFile) {
       if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.TXT, 'Broken Links', LinkState.BROKEN);
       if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.TXT, 'Skipped Links', LinkState.SKIPPED);
       if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.TXT, 'OK Links', LinkState.OK);
+      outputBody += '---\n\nReport created by Link Checker (https://github.com/johnwargo/link-checker) by John M. Wargo.\n';
       break;
   }
+
   const filePath = path.join(process.cwd(), config.outputFile + ext);
   if (debugMode) console.log(`\n${chalk.yellow('Output file path:')} ${filePath}`);
   if (debugMode) console.log('Writing output to file...');
