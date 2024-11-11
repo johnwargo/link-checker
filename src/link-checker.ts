@@ -41,7 +41,7 @@ enum LinkState {
   OK = 'OK',
 }
 
-enum outputFormat { JSON, MARKDOWN, TXT }
+enum OutputFormat { JSON, MARKDOWN, TXT }
 
 const OutputMap = {
   OK: chalk.green("OK"),
@@ -114,9 +114,9 @@ const prompt2: PromptObject[] = [
     message: 'Output format',
     initial: 1,
     choices: [
-      { title: 'JSON (.json)', value: outputFormat.JSON },
-      { title: 'Markdown (.md)', value: outputFormat.MARKDOWN },
-      { title: 'Text (.txt)', value: outputFormat.TXT },
+      { title: 'JSON (.json)', value: OutputFormat.JSON },
+      { title: 'Markdown (.md)', value: OutputFormat.MARKDOWN },
+      { title: 'Text (.txt)', value: OutputFormat.TXT },
     ]
   }
 ];
@@ -175,7 +175,7 @@ function logConfigError(errStr: string) {
 }
 
 function displayHelpAndExit() {
-    // Read the file and print its content to the console
+  // Read the file and print its content to the console
   const filePath = path.join(__dirname, 'help.txt');
   try {
     const data = fs.readFileSync(filePath, 'utf8');
@@ -183,10 +183,40 @@ function displayHelpAndExit() {
   } catch (err) {
     console.error('Unable to display help content, error reading help file');
     console.error(err);
-  }  
+  }
   process.exit(0);
 }
 
+function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, section: LinkState): string {
+  // get the links array for the section
+  var linksArray = result.links.filter(x => x.state === section);
+  // do we have any results?  No? then return an empty string
+  if (linksArray.length < 1) return '';
+
+  // sort the array
+  linksArray = linksArray.sort((a, b) => a.url.localeCompare(b.url));
+
+  var sectionText: string = '';
+  switch (outputFormat) {
+    case OutputFormat.MARKDOWN:
+      sectionText = `## ${sectionHeader}\n\n`;
+      sectionText += '| Status | URL |\n';
+      sectionText += '|--------|-----|\n';
+      for (var link of linksArray) {
+        sectionText += `| ${link.status?.toString().padStart(3, ' ')} | ${link.url} |\n`;
+      }    
+      break;
+    case OutputFormat.TXT:
+      sectionText = sectionHeader + '\n';
+      sectionText += '-'.repeat(sectionHeader.length + 5) + '\n';
+      for (var link of linksArray) {
+        sectionText += `(${link.status?.toString().padStart(3, ' ')}) ${link.url}\n`;
+      }    
+      break;
+  }
+  sectionText += '\n';
+  return sectionText;
+}
 
 /* Main Program  (execution starts here) */
 
@@ -232,23 +262,27 @@ const result = await checker.check({
 
 // write the output to the file
 if (config.saveToFile) {
-
-  // first build the output file path
   var ext = 'UNKNOWN';
   var outputBody = '';
 
   switch (config.outputType) {
-    case outputFormat.JSON:
+    case OutputFormat.JSON:
       ext = '.json';
       outputBody = JSON.stringify(result, null, 2);
       break;
-    case outputFormat.MARKDOWN:
+    case OutputFormat.MARKDOWN:
       ext = '.md';
-      outputBody = '# Link Checker Results\n\n';
+      outputBody = `# Link Checker Results\n\nCreated: ${new Date().toLocaleString()}\n\n`;
+      if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Broken Links', LinkState.BROKEN);
+      if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Skipped Links', LinkState.SKIPPED);
+      if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'OK Links', LinkState.OK);
       break;
-    case outputFormat.TXT:
+    case OutputFormat.TXT:
       ext = '.txt';
-      outputBody = 'Link Checker Results\n\n';
+      outputBody = `Link Checker Results\n${'='.repeat(20)}\n\nCreated: ${new Date().toLocaleString()}\n\n`;
+      if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.TXT, 'Broken Links', LinkState.BROKEN);
+      if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.TXT, 'Skipped Links', LinkState.SKIPPED);
+      if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.TXT, 'OK Links', LinkState.OK);
       break;
   }
   const filePath = path.join(process.cwd(), config.outputFile + ext);
@@ -274,6 +308,12 @@ if (config.outputOptions.includes(LinkState.BROKEN))
 const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
 if (config.outputOptions.includes(LinkState.SKIPPED))
   console.log(chalk.yellow('Skipped: ') + skippedLinksCount.length.toLocaleString() + ' links');
+
+
+// are we running in Visual Studio Code?
+if (process.env.TERM_PROGRAM == "vscode") {
+  console.log(chalk.yellow('\nRunning in Visual Studio Code'));  
+}
 
 // Have to do this because some requests are still in progress, 
 // but never seem to return
