@@ -1,10 +1,14 @@
-/******************************************
+/********************************************
  * Link Checker
  * 
  * by John M. Wargo 
  * https://johnwargo.com
  * 
-*******************************************/
+ * Created November, 2024
+ * 
+ * https://github.com/johnwargo/link-checker
+ * 
+*********************************************/
 
 // Based on: https://www.seancdavis.com/posts/using-nodejs-to-check-for-broken-links/
 // That got me started, then I pulled in more code from the docs
