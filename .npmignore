@@ -4,6 +4,7 @@ node_modules/
 src/
 
 # files
+changelog.md
+link-checker-results.*
 package-lock.json
 tsconfig.json
-link-checker-results.*

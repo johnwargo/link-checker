@@ -63,6 +63,11 @@ const prompt1 = [
 ];
 const prompt2 = [
     {
+        type: 'text',
+        name: 'outputFile',
+        message: 'Output file root filename (no extension)',
+        initial: DEFAULT_OUTPUT_FILE_ROOT,
+    }, {
         type: 'select',
         name: 'outputType',
         message: 'Output format',
@@ -72,11 +77,6 @@ const prompt2 = [
             { title: 'Markdown (.md)', value: outputFormat.MARKDOWN },
             { title: 'Text (.txt)', value: outputFormat.TXT },
         ]
-    }, {
-        type: 'text',
-        name: 'outputFile',
-        message: 'Output file root filename (no extension)',
-        initial: DEFAULT_OUTPUT_FILE_ROOT,
     }
 ];
 checker.on('pagestart', (url) => {
@@ -124,9 +124,23 @@ function logConfigError(errStr) {
     console.log(`\n${chalk.red('Error:')} ${errStr}`);
     process.exit(1);
 }
+function displayHelpAndExit() {
+    const filePath = path.join(process.cwd(), 'help.txt');
+    try {
+        const data = fs.readFileSync(filePath, 'utf8');
+        console.log(data);
+    }
+    catch (err) {
+        console.error('Unable to display help content, error reading help file');
+        console.error(err);
+    }
+    process.exit(0);
+}
 console.log(boxen(APP_NAME, { padding: 1 }));
 console.log(`\n${APP_AUTHOR}\n`);
 const myArgs = process.argv.slice(2);
+if (myArgs.includes('-?'))
+    displayHelpAndExit();
 const debugMode = myArgs.includes('-d');
 if (debugMode)
     console.log(chalk.yellow('Debug Mode enabled\n'));

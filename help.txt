@@ -1,0 +1,13 @@
+This link checker utility validates all of the links in a web site recursively. 
+
+To use the utility, execute the checklinks command in a command prompt or terminal window. The utility will prompt you for its operational parameters:
+
++ Target URL: the web site you want scanned for links.
++ Number of concurrent requests: use a smaller number to not overload the site.
++ Timeout: The number of milliseconds to wait for a response from the target link.
++ Output options: Chose whether or not to display OK, skipped, and/or broken links.
++ Save output to file: Whether you want the program's output written to a file.
++ Output file name: If you choose to write the output to a file, this is the file root name used.
++ Output file format: Whether you want the output written to disk as JSON, Markdown, or Text.
+
+Once you've answered all the question, the utility will then start scanning the provide website URL for links and display the list of links and results to the console.

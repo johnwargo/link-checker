@@ -174,6 +174,20 @@ function logConfigError(errStr: string) {
   process.exit(1);
 }
 
+function displayHelpAndExit() {
+    // Read the file and print its content to the console
+  const filePath = path.join(process.cwd(), 'help.txt');
+  try {
+    const data = fs.readFileSync(filePath, 'utf8');
+    console.log(data);
+  } catch (err) {
+    console.error('Unable to display help content, error reading help file');
+    console.error(err);
+  }  
+  process.exit(0);
+}
+
+
 /* Main Program  (execution starts here) */
 
 console.log(boxen(APP_NAME, { padding: 1 }));
@@ -181,6 +195,8 @@ console.log(`\n${APP_AUTHOR}\n`);
 
 // do we have command-line arguments?
 const myArgs = process.argv.slice(2);
+if (myArgs.includes('-?')) displayHelpAndExit();
+
 const debugMode = myArgs.includes('-d');
 if (debugMode) console.log(chalk.yellow('Debug Mode enabled\n'));
 
