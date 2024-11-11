@@ -176,7 +176,7 @@ function logConfigError(errStr: string) {
 
 function displayHelpAndExit() {
     // Read the file and print its content to the console
-  const filePath = path.join(process.cwd(), 'help.txt');
+  const filePath = path.join(__dirname, 'help.txt');
   try {
     const data = fs.readFileSync(filePath, 'utf8');
     console.log(data);
