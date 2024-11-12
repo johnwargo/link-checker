@@ -253,11 +253,8 @@ if (debugMode) {
 }
 
 // validate the configuration
-// do we have a valid URL?
 if (!isValidHttpUrl(config.siteUrl)) logConfigError(`${config.siteUrl} is not a valid URL`);
-// do we have a valid number of concurrent requests?
 if (config.concurrentRequests < 1) logConfigError('Concurrent requests must be greater than 0');
-// do we have a valid timeout value?
 if (config.timeoutValue < 1) logConfigError('Timeout value must be greater than 0');
 if (config.outputOptions.length < 1) logConfigError('You must select at least one output option');
 
