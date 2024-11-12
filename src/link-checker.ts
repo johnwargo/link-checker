@@ -312,9 +312,8 @@ if (config.saveToFile) {
   if (process.env.TERM_PROGRAM == "vscode") {
     // then open the file in the editor
     console.log(chalk.blue('Opening report in Visual Studio Code'));
-    var localFile = '.' + path.sep + path.relative(process.cwd(), filePath);
     try {
-      await execa('code', [localFile]);
+      await execa('code', [filePath]);
     } catch (err) {
       console.error(err);
       process.exit(1);
@@ -326,13 +325,15 @@ console.log(`\nScan Results`);
 console.log('='.repeat(30));
 console.log(chalk.green('Scanned: ') + result.links.length.toLocaleString() + ' links');
 
-const brokenLinksCount = result.links.filter(x => x.state === 'BROKEN');
-if (config.outputOptions.includes(LinkState.BROKEN))
+if (config.outputOptions.includes(LinkState.BROKEN)) {
+  const brokenLinksCount = result.links.filter(x => x.state === 'BROKEN');
   console.log(chalk.red('Broken: ') + brokenLinksCount.length.toLocaleString() + ' links');
-
-const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
-if (config.outputOptions.includes(LinkState.SKIPPED))
+}
+  
+if (config.outputOptions.includes(LinkState.SKIPPED)){
+  const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
   console.log(chalk.yellow('Skipped: ') + skippedLinksCount.length.toLocaleString() + ' links');
+}
 
 console.log('='.repeat(30));
 

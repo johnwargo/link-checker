@@ -252,11 +252,13 @@ if (config.saveToFile) {
 console.log(`\nScan Results`);
 console.log('='.repeat(30));
 console.log(chalk.green('Scanned: ') + result.links.length.toLocaleString() + ' links');
-const brokenLinksCount = result.links.filter(x => x.state === 'BROKEN');
-if (config.outputOptions.includes(LinkState.BROKEN))
+if (config.outputOptions.includes(LinkState.BROKEN)) {
+    const brokenLinksCount = result.links.filter(x => x.state === 'BROKEN');
     console.log(chalk.red('Broken: ') + brokenLinksCount.length.toLocaleString() + ' links');
-const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
-if (config.outputOptions.includes(LinkState.SKIPPED))
+}
+if (config.outputOptions.includes(LinkState.SKIPPED)) {
+    const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
     console.log(chalk.yellow('Skipped: ') + skippedLinksCount.length.toLocaleString() + ' links');
+}
 console.log('='.repeat(30));
 process.exit(0);
