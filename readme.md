@@ -10,6 +10,11 @@ A simple node.js-based terminal (command-line) utility that validates links on a
 npm install -g @johnwargo/link-checker
 ```
 
+With that in place, you can execute the utility from anywhere using:
+
+```shell
+checklinks
+```
 
 ### Project Installation
 
