@@ -1,11 +1,47 @@
 # (Yet Another) Link Checker
 
-A simple node.js-based command line utility that validates links on a web site. You provide the target URL and answer a couple of questions and the utility scans all links on the target site (recursively) and reports the results to the console. You can even write the results to a file in json, markdown and text format for further analysis.
+A simple node.js-based terminal (command-line) utility that validates links on a local or remote web site. You provide the target URL and answer a couple of questions and the utility scans all links on the target site (recursively) and reports the results to the console. You can even write the results to a file in json, markdown and text format for further analysis.
 
 ## Installation
 
+### Global Installation
+
+```shell
+npm install -g @johnwargo/link-checker
+```
+
+
+### Project Installation
+
+
 
 ## Usage
+
+### Without Installation
+
+If you don't want to install it, you can simply execute it on the fly with the following command:
+
+```shell
+npm @johnwargo/link-checker
+```
+
+
+### Global Installation
+
+```shell
+checklinks
+```
+
+### Project-based
+
+
+
+## Operation
+
+Here's what happens when you run the utility
+
+
+## Command-line Arguments
 
 ## Background
 
