@@ -1,4 +1,4 @@
-# Link Checker
+# (Yet Another) Link Checker
 
 A node.js-based command line utility for validating links on a web site.
 
