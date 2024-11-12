@@ -26,9 +26,9 @@ const checker = new LinkChecker();
 const APP_NAME = 'Link Checker';
 const APP_AUTHOR = 'by John M. Wargo (https://johnwargo.com)';
 const DEFAULT_URL = 'http://localhost:8080';
-const DEFAULT_CONCURRENT_REQUESTS = 100;
+const DEFAULT_CONCURRENT_REQUESTS = 10;
 const DEFAULT_OUTPUT_FILE_ROOT = 'link-checker-results';
-const DEFAULT_TIMEOUT = 10000;
+const DEFAULT_TIMEOUT = 5000;
 const prompt1 = [
     {
         type: 'text',
@@ -38,12 +38,12 @@ const prompt1 = [
     }, {
         type: 'number',
         name: 'concurrentRequests',
-        message: 'Number of concurrent requests',
+        message: 'Number of concurrent requests; must be greater than zero',
         initial: DEFAULT_CONCURRENT_REQUESTS
     }, {
         type: 'number',
         name: 'timeoutValue',
-        message: 'Timeout value (in milliseconds)',
+        message: 'Timeout value (in milliseconds); must be greater than zero',
         initial: DEFAULT_TIMEOUT
     }, {
         type: 'multiselect',
@@ -52,7 +52,7 @@ const prompt1 = [
         choices: [
             { title: 'OK', value: LinkState.OK, selected: false },
             { title: 'Broken', value: LinkState.BROKEN, selected: true },
-            { title: 'Skipped', value: LinkState.SKIPPED, selected: true }
+            { title: 'Skipped', value: LinkState.SKIPPED, selected: false }
         ],
         hint: '- Space to select. Return to submit'
     }, {
@@ -239,9 +239,8 @@ if (config.saveToFile) {
     }
     if (process.env.TERM_PROGRAM == "vscode") {
         console.log(chalk.blue('Opening report in Visual Studio Code'));
-        var localFile = '.' + path.sep + path.relative(process.cwd(), filePath);
         try {
-            await execa('code', [localFile]);
+            await execa('code', [filePath]);
         }
         catch (err) {
             console.error(err);

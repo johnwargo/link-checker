@@ -61,9 +61,9 @@ const APP_AUTHOR = 'by John M. Wargo (https://johnwargo.com)';
 // *****************************************
 
 const DEFAULT_URL = 'http://localhost:8080';
-const DEFAULT_CONCURRENT_REQUESTS = 100;
+const DEFAULT_CONCURRENT_REQUESTS = 10;
 const DEFAULT_OUTPUT_FILE_ROOT = 'link-checker-results';
-const DEFAULT_TIMEOUT = 10000;
+const DEFAULT_TIMEOUT = 5000;
 
 // *****************************************
 // Prompt arrays
@@ -78,12 +78,12 @@ const prompt1: PromptObject[] = [
   }, {
     type: 'number',
     name: 'concurrentRequests',
-    message: 'Number of concurrent requests',
+    message: 'Number of concurrent requests; must be greater than zero',
     initial: DEFAULT_CONCURRENT_REQUESTS
   }, {
     type: 'number',
     name: 'timeoutValue',
-    message: 'Timeout value (in milliseconds)',
+    message: 'Timeout value (in milliseconds); must be greater than zero',
     initial: DEFAULT_TIMEOUT
   }, {
     type: 'multiselect',
@@ -92,7 +92,7 @@ const prompt1: PromptObject[] = [
     choices: [
       { title: 'OK', value: LinkState.OK, selected: false },
       { title: 'Broken', value: LinkState.BROKEN, selected: true },
-      { title: 'Skipped', value: LinkState.SKIPPED, selected: true }
+      { title: 'Skipped', value: LinkState.SKIPPED, selected: false }
     ],
     // max: 2,
     hint: '- Space to select. Return to submit'
