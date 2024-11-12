@@ -267,7 +267,6 @@ const result = await checker.check({
 });
 
 if (config.saveToFile) {
-  // write the output to the file
   var ext = 'UNKNOWN';
   var outputBody = '';
 
@@ -294,7 +293,6 @@ if (config.saveToFile) {
       break;
   }
 
-  // write the file to disk
   const filePath = path.join(process.cwd(), config.outputFile + ext);
   if (debugMode) console.log(chalk.blue('Writing output to file...'));
   try {
@@ -304,10 +302,9 @@ if (config.saveToFile) {
     console.log(chalk.red('Error writing output to file'));
     console.dir(err);
   }
-
-  // are we running in Visual Studio Code?
+  
   if (process.env.TERM_PROGRAM == "vscode") {
-    // then open the file in the editor
+    // are we running in Visual Studio Code? Open the file in the editor
     console.log(chalk.blue('Opening report in Visual Studio Code'));
     try {
       await execa('code', [filePath]);
