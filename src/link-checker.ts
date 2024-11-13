@@ -28,6 +28,16 @@ import prompts, { PromptObject } from 'prompts';
 // https://iamwebwiz.medium.com/how-to-fix-dirname-is-not-defined-in-es-module-scope-34d94a86694d
 import { fileURLToPath } from 'url';
 
+type ConfigObject = {
+  siteUrl: string;
+  concurrentRequests: number;
+  timeoutValue: number;
+  outputOptions: LinkState[];
+  saveToFile: boolean;
+  outputFile?: string;
+  outputType?: OutputFormat;
+};
+
 type LinkResult = {
   url: string;
   status?: number;
@@ -50,25 +60,34 @@ enum LinkState {
 
 enum OutputFormat { JSON, MARKDOWN, TXT }
 
+// *****************************************
+// Constants
+// *****************************************
+
+const checker = new LinkChecker();
+const APP_NAME = 'Link Checker';
+const APP_AUTHOR = 'by John M. Wargo (https://johnwargo.com)';
+const CONFIG_FILE_NAME = 'link-checker-config.json';
+const DEFAULT_URL = 'http://localhost:8080';
+const DEFAULT_CONCURRENT_REQUESTS = 10;
+const DEFAULT_OUTPUT_FILE_ROOT = 'link-checker-results';
+const DEFAULT_TIMEOUT = 5000;
+
+const defaultConfigObject: ConfigObject = {
+  siteUrl: DEFAULT_URL,
+  concurrentRequests: DEFAULT_CONCURRENT_REQUESTS,
+  timeoutValue: DEFAULT_TIMEOUT,
+  outputOptions: [LinkState.BROKEN],
+  saveToFile: true,
+  outputFile: 'link-checker-results',
+  outputType: OutputFormat.JSON
+};
+
 const OutputMap = {
   OK: chalk.green("OK"),
   BROKEN: chalk.red("BROKEN"),
   SKIPPED: chalk.yellow("SKIPPED"),
 };
-
-const checker = new LinkChecker();
-
-const APP_NAME = 'Link Checker';
-const APP_AUTHOR = 'by John M. Wargo (https://johnwargo.com)';
-
-// *****************************************
-// Default Prompt Values
-// *****************************************
-
-const DEFAULT_URL = 'http://localhost:8080';
-const DEFAULT_CONCURRENT_REQUESTS = 10;
-const DEFAULT_OUTPUT_FILE_ROOT = 'link-checker-results';
-const DEFAULT_TIMEOUT = 5000;
 
 // *****************************************
 // Prompt arrays
@@ -185,7 +204,7 @@ function logConfigError(errStr: string) {
   process.exit(1);
 }
 
-function displayHelpAndExit( targetFolder: string) {
+function displayHelpAndExit(targetFolder: string) {
   // Read the file and print its content to the console
   const filePath = path.join(targetFolder, 'help.txt');
   try {
@@ -246,16 +265,44 @@ const myArgs = process.argv.slice(2);
 if (myArgs.includes('-?') || myArgs.includes('/?')) displayHelpAndExit(__dirname);
 
 const debugMode = myArgs.includes('-d');
-if (debugMode) console.log(chalk.yellow('Debug Mode enabled\n'));
+if (debugMode) console.log(chalk.yellow('Debug Mode enabled'));
 
-// prompt for the configuration options
-var config = await prompts(prompt1, { onCancel: onCancelPrompt });
-// did the user want to save the output to a file?
-if (config.saveToFile) {
-  // then do another prompt
-  const configAlt = await prompts(prompt2, { onCancel: onCancelPrompt });
-  config = { ...config, ...configAlt };
+const saveConfig = myArgs.includes('-s');
+const autoMode = myArgs.includes('-a');
+
+// are both modes enabled?
+if (saveConfig && autoMode) {
+  // not allowed
+  console.log(chalk.red('\nError: -s and -a flags are mutually exclusive'));
+  process.exit(1);
 }
+
+var config: any = {}
+var configAlt: any = {}
+
+if (autoMode) {
+  // auto mode, no prompts
+  console.log(chalk.yellow('Auto mode enabled\n'));
+  const configFilePath = path.join(process.cwd(), CONFIG_FILE_NAME);
+  if (!fs.existsSync(configFilePath)) {
+    console.log(chalk.red(`\nError: Configuration file not found: ${configFilePath}`));
+    process.exit(1);
+  }
+  const configFile = fs.readFileSync(configFilePath, 'utf8');
+  configAlt = JSON.parse(configFile);
+  // copy the read configuration to the config object
+  config = { ...defaultConfigObject, ...configAlt };
+} else {
+  // prompt for the configuration options
+  config = await prompts(prompt1, { onCancel: onCancelPrompt });
+  // did the user want to save the output to a file?
+  if (config.saveToFile) {
+    // then do another prompt
+    configAlt = await prompts(prompt2, { onCancel: onCancelPrompt });
+    config = { ...config, ...configAlt };
+  } 
+}
+
 if (debugMode) {
   console.log(chalk.yellow('\nConfiguration Object:'));
   console.dir(config);
@@ -266,6 +313,14 @@ if (!isValidHttpUrl(config.siteUrl)) logConfigError(`${config.siteUrl} is not a 
 if (config.concurrentRequests < 1) logConfigError('Concurrent requests must be greater than 0');
 if (config.timeoutValue < 1) logConfigError('Timeout value must be greater than 0');
 if (config.outputOptions.length < 1) logConfigError('You must select at least one output option');
+
+if (saveConfig) {
+  // save the configuration to a file  
+  const configFilePath = path.join(process.cwd(), CONFIG_FILE_NAME);
+  console.log(chalk.yellow(`\nSaving configuration to ${configFilePath}\n`));
+  fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2));
+  process.exit(0);
+}
 
 console.log(chalk.yellow('\nStarting scan...\n'));
 const result = await checker.check({
@@ -311,7 +366,7 @@ if (config.saveToFile) {
     console.log(chalk.red('Error writing output to file'));
     console.dir(err);
   }
-  
+
   if (process.env.TERM_PROGRAM == "vscode") {
     // are we running in Visual Studio Code? Open the file in the editor
     console.log(chalk.blue('Opening report in Visual Studio Code'));
@@ -332,8 +387,8 @@ if (config.outputOptions.includes(LinkState.BROKEN)) {
   const brokenLinksCount = result.links.filter(x => x.state === 'BROKEN');
   console.log(chalk.red('Broken: ') + brokenLinksCount.length.toLocaleString() + ' links');
 }
-  
-if (config.outputOptions.includes(LinkState.SKIPPED)){
+
+if (config.outputOptions.includes(LinkState.SKIPPED)) {
   const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
   console.log(chalk.yellow('Skipped: ') + skippedLinksCount.length.toLocaleString() + ' links');
 }

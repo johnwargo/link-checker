@@ -3,3 +3,4 @@ node_modules/
 
 # Files
 link-checker-results.*
+link-checker-config.json
