@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /********************************************
  * Link Checker
  * 
@@ -14,6 +16,7 @@
 // That got me started, then I pulled in more code from the docs and wrote my own
 
 // TODO: Local only flag (don't check external links)
+// TODO: Automated mode
 
 import boxen from 'boxen';
 import chalk from 'chalk';
