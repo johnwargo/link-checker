@@ -6,6 +6,7 @@ import fs from 'fs';
 import { LinkChecker } from "linkinator";
 import path from 'path';
 import prompts from 'prompts';
+import { fileURLToPath } from 'url';
 var LinkState;
 (function (LinkState) {
     LinkState["BROKEN"] = "BROKEN";
@@ -126,8 +127,8 @@ function logConfigError(errStr) {
     console.log(`\n${chalk.red('Error:')} ${errStr}`);
     process.exit(1);
 }
-function displayHelpAndExit() {
-    const filePath = path.join(__dirname, 'help.txt');
+function displayHelpAndExit(targetFolder) {
+    const filePath = path.join(targetFolder, 'help.txt');
     try {
         const data = fs.readFileSync(filePath, 'utf8');
         console.log(data);
@@ -166,9 +167,11 @@ function writeFileSection(outputFormat, sectionHeader, section) {
 }
 console.log(boxen(APP_NAME, { padding: 1 }));
 console.log(`\n${APP_AUTHOR}\n`);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const myArgs = process.argv.slice(2);
-if (myArgs.includes('-?'))
-    displayHelpAndExit();
+if (myArgs.includes('-?') || myArgs.includes('/?'))
+    displayHelpAndExit(__dirname);
 const debugMode = myArgs.includes('-d');
 if (debugMode)
     console.log(chalk.yellow('Debug Mode enabled\n'));

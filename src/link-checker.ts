@@ -15,7 +15,6 @@
 // Based on: https://www.seancdavis.com/posts/using-nodejs-to-check-for-broken-links/
 // That got me started, then I pulled in more code from the docs and wrote my own
 
-// TODO: Fix __dirname issue
 // TODO: Local only flag (don't check external links)
 // TODO: Automated mode
 
@@ -26,6 +25,8 @@ import fs from 'fs';
 import { LinkChecker } from "linkinator";
 import path from 'path';
 import prompts, { PromptObject } from 'prompts';
+// https://iamwebwiz.medium.com/how-to-fix-dirname-is-not-defined-in-es-module-scope-34d94a86694d
+import { fileURLToPath } from 'url';
 
 type LinkResult = {
   url: string;
@@ -184,9 +185,9 @@ function logConfigError(errStr: string) {
   process.exit(1);
 }
 
-function displayHelpAndExit() {
+function displayHelpAndExit( targetFolder: string) {
   // Read the file and print its content to the console
-  const filePath = path.join(__dirname, 'help.txt');
+  const filePath = path.join(targetFolder, 'help.txt');
   try {
     const data = fs.readFileSync(filePath, 'utf8');
     console.log(data);
@@ -236,9 +237,13 @@ function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, sec
 console.log(boxen(APP_NAME, { padding: 1 }));
 console.log(`\n${APP_AUTHOR}\n`);
 
+// https://iamwebwiz.medium.com/how-to-fix-dirname-is-not-defined-in-es-module-scope-34d94a86694d
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+
 // do we have command-line arguments?
 const myArgs = process.argv.slice(2);
-if (myArgs.includes('-?')) displayHelpAndExit();
+if (myArgs.includes('-?') || myArgs.includes('/?')) displayHelpAndExit(__dirname);
 
 const debugMode = myArgs.includes('-d');
 if (debugMode) console.log(chalk.yellow('Debug Mode enabled\n'));
