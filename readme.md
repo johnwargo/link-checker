@@ -3,7 +3,6 @@
 A simple node.js-based terminal (command-line) utility that validates links on a local or remote web site. You provide the target URL and answer a couple of questions and the utility scans all links on the target site (recursively) and reports the results to the console. You can even write the results to a file in json, markdown and text format for further analysis.
 
 <!-- TOC -->
-<!-- TOC -->
 
 - [Yet Another Link Checker](#yet-another-link-checker)
   - [Features](#features)
@@ -13,6 +12,7 @@ A simple node.js-based terminal (command-line) utility that validates links on a
   - [Executing Without Installation](#executing-without-installation)
   - [Operation](#operation)
   - [Status Codes](#status-codes)
+  - [False Positives](#false-positives)
   - [Command-line Arguments](#command-line-arguments)
   - [Background](#background)
 
@@ -148,6 +148,14 @@ When you look at scan results, you may see some status codes that don't make sen
 | 999         | From [Uptime Robot](https://uptimerobot.com/blog/999-status-code/): When a system detects an overwhelming amount of requests, it responds with the 999 status code, basically telling the client, “You're overdoing it. Slow down!” Think of it as a speed limit for data seekers.<br />I also noticed that [LinkedIn](https://www.linkedin.com/) returns a 999 error pretty consistently. |
 
 If you encounter a new one, please create an [issue here](https://github.com/johnwargo/link-checker/issues) and let me know so I can add it to the table.
+
+## False Positives
+
+The utility sometimes returns false positives. For example, the 403 errors shown below. In that example, those are valid URLs, but the site blocks the request due to a human check the site performs before letting a visitor access the target page.
+
+![Link Checker Results Report](/images/link-cheker-results-md.png)
+
+For this reason, you should double-check the broken links before you assume they're actually broken.
 
 ## Command-line Arguments
 
