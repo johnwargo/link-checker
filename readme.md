@@ -155,7 +155,7 @@ The utility sometimes returns false positives. For example, the 403 errors shown
 
 ![Link Checker Results Report](/images/link-cheker-results-md.png)
 
-For this reason, you should double-check the broken links before you assume they're actually broken.
+For this reason, you should double-check the broken links to validate they're actually broken.
 
 ## Command-line Arguments
 
