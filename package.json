@@ -1,6 +1,6 @@
 {
   "name": "@johnwargo/link-checker",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A nodejs-based command line utility to validate links in a web application",
   "author": "John M. Wargo",
   "license": "MIT",
