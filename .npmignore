@@ -6,5 +6,6 @@ src/
 # files
 changelog.md
 link-checker-results.*
+link-checker-config.json
 package-lock.json
 tsconfig.json
