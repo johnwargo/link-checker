@@ -1,9 +1,9 @@
 # Change Log
 
-## V0.0.4 (November 15, 2024)
+## V0.0.4 (November 16, 2024)
 
-* Added the ability to write configuration settings to a configuration file
-* Added the ability to automate the link checking process using the configuration file. 
+* Added the ability to write configuration settings to a configuration file (`-s` flag).
+* Added the ability to automate the link checking process using the configuration file (`-a` flag). 
 
 Right now its one configuration file only, no management of multiple files. 
 

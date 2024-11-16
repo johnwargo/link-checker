@@ -282,7 +282,7 @@ var configAlt: any = {}
 
 if (autoMode) {
   // auto mode, no prompts
-  console.log(chalk.yellow('Auto mode enabled\n'));
+  console.log(chalk.yellow('Auto mode enabled'));
   const configFilePath = path.join(process.cwd(), CONFIG_FILE_NAME);
   if (!fs.existsSync(configFilePath)) {
     console.log(chalk.red(`\nError: Configuration file not found: ${configFilePath}`));

@@ -1,20 +1,19 @@
-# (Yet Another) Link Checker
-
 A simple node.js-based terminal (command-line) utility that validates links on a local or remote web site. You provide the target URL and answer a couple of questions and the utility scans all links on the target site (recursively) and reports the results to the console. You can even write the results to a file in json, markdown and text format for further analysis.
 
 <!-- TOC -->
 
-- [Yet Another Link Checker](#yet-another-link-checker)
-  - [Features](#features)
-  - [Installation](#installation)
-    - [Global Installation](#global-installation)
-    - [Project Installation](#project-installation)
-  - [Executing Without Installation](#executing-without-installation)
-  - [Operation](#operation)
-  - [Status Codes](#status-codes)
-  - [False Positives](#false-positives)
-  - [Command-line Arguments](#command-line-arguments)
-  - [Background](#background)
+- [Features](#features)
+- [Installation](#installation)
+  - [Global Installation](#global-installation)
+  - [Project Installation](#project-installation)
+- [Executing Without Installation](#executing-without-installation)
+- [Operation](#operation)
+  - [Default Operation](#default-operation)
+  - [Automated Operation](#automated-operation)
+- [Status Codes](#status-codes)
+- [False Positives](#false-positives)
+- [Command-line Arguments](#command-line-arguments)
+- [Background](#background)
 
 <!-- /TOC -->
 ## Features
@@ -73,6 +72,8 @@ With this approach, npm downloads and execute the utility without installing it.
 
 ## Operation
 
+### Default Operation
+
 When you execute the utility, it prompts you for its operating parameters:
 
  It looks like this:
@@ -126,7 +127,7 @@ by John M. Wargo (https://johnwargo.com)
 
 Starting scan...
 
-<<scan activity here...>>
+--- scan activity here ---
 
 Results successfully written to file: D:\dev\links\link-checker-results.md
 
@@ -135,6 +136,61 @@ Scan Results
 Scanned: 1,079 links
 Broken: 42 links
 Skipped: 23 links
+==============================
+```
+
+### Automated Operation
+
+To facilitate saving default scan settings in a project folder, the utility supports **Auto** mode. With Auto mode, you: 
+
+Run the `checklinks` command the `-s` flag: `checklinks -s`. This causes the utility to prompt you for configuration settings as usual, but then writes all of your choices to a file called `link-checker-config.json` in the current folder. Once it completes writing the settings to the file, the utility exits.
+
+The output looks like this: 
+
+``` text
+┌──────────────────┐
+│                  │
+│   Link Checker   │
+│                  │
+└──────────────────┘
+
+by John M. Wargo (https://johnwargo.com)
+
+? Target site URL » http://localhost:8080
+√ Target site URL ... http://localhost:8080
+√ Number of concurrent requests; must be greater than zero ... 10
+√ Timeout value (in milliseconds); must be greater than zero ... 5000
+√ Select output options » Broken
+√ Save output to file? ... yes
+√ Output file root filename (no extension) ... link-checker-results
+√ Output format » Markdown (.md)
+
+Saving configuration to D:\dev\node\link-checker\link-checker-config.json
+```
+
+Next, run the `checklinks` command with the `-a` flag: `checklinks -a`
+
+``` text
+┌──────────────────┐
+│                  │
+│   Link Checker   │
+│                  │
+└──────────────────┘
+
+by John M. Wargo (https://johnwargo.com)
+
+Auto mode enabled
+Starting scan...
+
+--- scan activity here ---
+
+Results successfully written to file: D:\dev\node\link-checker\link-checker-results.md
+Opening report in Visual Studio Code
+
+Scan Results
+==============================
+Scanned: 250 links
+Broken: 5 links
 ==============================
 ```
 
@@ -164,7 +220,9 @@ The utility supports a very limited number of command-line options:
 | Flag | Description |
 | ---- | ----------- |
 | -?   | Displays the contents of a help file in the console. |
+| -a   | Enables auto mode (see [Automated Operation](#automated-operation)) |
 | -d   | Enables `debugMode` in the utility which causes it to write additional information (not much really) to the terminal window as it works. |
+| -s   | Write configuration choices to `link-checker-config.json` (see [Automated Operation](#automated-operation)) |
 
 ## Background
 
