@@ -31,6 +31,7 @@ import { fileURLToPath } from 'url';
 type ConfigObject = {
   siteUrl: string;
   concurrentRequests: number;
+  internalLinksOnly: boolean;
   timeoutValue: number;
   outputOptions: LinkState[];
   saveToFile: boolean;
@@ -76,6 +77,7 @@ const DEFAULT_TIMEOUT = 5000;
 const defaultConfigObject: ConfigObject = {
   siteUrl: DEFAULT_URL,
   concurrentRequests: DEFAULT_CONCURRENT_REQUESTS,
+  internalLinksOnly: true,
   timeoutValue: DEFAULT_TIMEOUT,
   outputOptions: [LinkState.BROKEN],
   saveToFile: true,
@@ -99,6 +101,11 @@ const prompt1: PromptObject[] = [
     name: 'siteUrl',
     message: 'Target site URL',
     initial: DEFAULT_URL
+  }, {
+    type: 'confirm',
+    name: 'internalLinksOnly',
+    message: 'Test internal links only? (No for internal and external links)',
+    initial: true
   }, {
     type: 'number',
     name: 'concurrentRequests',
@@ -300,7 +307,7 @@ if (autoMode) {
     // then do another prompt
     configAlt = await prompts(prompt2, { onCancel: onCancelPrompt });
     config = { ...config, ...configAlt };
-  } 
+  }
 }
 
 if (debugMode) {
@@ -322,77 +329,97 @@ if (saveConfig) {
   process.exit(0);
 }
 
-console.log(chalk.yellow('\nStarting scan...\n'));
-const result = await checker.check({
+// Added v0.0.6
+let checkerOptions: any = {
   concurrency: config.concurrentRequests,
   path: config.siteUrl,
   recurse: true,
   timeout: config.timeoutValue
-});
+};
+// Added v0.0.6
+if (config.internalLinksOnly) {
+  /* linksToSkip (array | function) - An array of regular expression strings that should be skipped, OR an async function that's called for each link with the link URL as its only argument. Return a Promise that resolves to true to skip the link or false to check it. */
+  checkerOptions.linksToSkip = (url: string) => {
+    // Skip anything that isn't an internal link
+    return !url.startsWith(config.siteUrl) && !url.startsWith('/');
+  }
+}
+
+console.log(chalk.yellow('\nStarting scan...\n'));
+const result = await checker.check(checkerOptions);
+
+// get the link counts
+const processedLinks = result.links.length;
+const scannedLinks = result.links.filter(x => x.state !== 'SKIPPED').length;
+const brokenLinks = result.links.filter(x => x.state === 'BROKEN').length;
+const skippedLinks = result.links.filter(x => x.state === 'SKIPPED').length;
 
 if (config.saveToFile) {
-  var ext = 'UNKNOWN';
-  var outputBody = '';
 
-  switch (config.outputType) {
-    case OutputFormat.JSON:
-      ext = '.json';
-      outputBody = JSON.stringify(result, null, 2);
-      break;
-    case OutputFormat.MARKDOWN:
-      ext = '.md';
-      outputBody = `# Link Checker Results\n\n**Created:** ${new Date().toLocaleString()}\n\n`;
-      if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Broken Links', LinkState.BROKEN);
-      if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Skipped Links', LinkState.SKIPPED);
-      if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'OK Links', LinkState.OK);
-      outputBody += '---\n\nReport created by <a href="https://github.com/johnwargo/link-checker" target="_blank">Link Checker</a> by John M. Wargo.\n';
-      break;
-    case OutputFormat.TXT:
-      ext = '.txt';
-      outputBody = `Link Checker Results\n${'='.repeat(20)}\n\nCreated: ${new Date().toLocaleString()}\n\n`;
-      if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.TXT, 'Broken Links', LinkState.BROKEN);
-      if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.TXT, 'Skipped Links', LinkState.SKIPPED);
-      if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.TXT, 'OK Links', LinkState.OK);
-      outputBody += '---\n\nReport created by Link Checker (https://github.com/johnwargo/link-checker) by John M. Wargo.\n';
-      break;
-  }
+  let saveFile: boolean = config.outputOptions.includes(LinkState.OK) && processedLinks > 0;
+  saveFile = saveFile || config.outputOptions.includes(LinkState.BROKEN) && brokenLinks > 0;
+  saveFile = saveFile || config.outputOptions.includes(LinkState.SKIPPED) && skippedLinks > 0;
 
-  const filePath = path.join(process.cwd(), config.outputFile + ext);
-  if (debugMode) console.log(chalk.blue('Writing output to file...'));
-  try {
-    fs.writeFileSync(filePath, outputBody);
-    console.log(chalk.green('Results successfully written to file: ') + filePath);
-  } catch (err) {
-    console.log(chalk.red('Error writing output to file'));
-    console.dir(err);
-  }
+  if (saveFile) {
+    var ext = 'UNKNOWN';
+    var outputBody = '';
 
-  if (process.env.TERM_PROGRAM == "vscode") {
-    // are we running in Visual Studio Code? Open the file in the editor
-    console.log(chalk.blue('Opening report in Visual Studio Code'));
-    try {
-      await execa('code', [filePath]);
-    } catch (err) {
-      console.error(err);
-      process.exit(1);
+    switch (config.outputType) {
+      case OutputFormat.JSON:
+        ext = '.json';
+        outputBody = JSON.stringify(result, null, 2);
+        break;
+      case OutputFormat.MARKDOWN:
+        ext = '.md';
+        outputBody = `# Link Checker Results\n\n**Created:** ${new Date().toLocaleString()}\n\n`;
+        if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Broken Links', LinkState.BROKEN);
+        if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Skipped Links', LinkState.SKIPPED);
+        if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'OK Links', LinkState.OK);
+        outputBody += '---\n\nReport created by <a href="https://github.com/johnwargo/link-checker" target="_blank">Link Checker</a> by John M. Wargo.\n';
+        break;
+      case OutputFormat.TXT:
+        ext = '.txt';
+        outputBody = `Link Checker Results\n${'='.repeat(20)}\n\nCreated: ${new Date().toLocaleString()}\n\n`;
+        if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.TXT, 'Broken Links', LinkState.BROKEN);
+        if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.TXT, 'Skipped Links', LinkState.SKIPPED);
+        if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.TXT, 'OK Links', LinkState.OK);
+        outputBody += '---\n\nReport created by Link Checker (https://github.com/johnwargo/link-checker) by John M. Wargo.\n';
+        break;
     }
+
+    const filePath = path.join(process.cwd(), config.outputFile + ext);
+    if (debugMode) console.log(chalk.blue('Writing output to file...'));
+    try {
+      fs.writeFileSync(filePath, outputBody);
+      console.log(chalk.green('\nResults successfully written to file: ') + filePath);
+    } catch (err) {
+      console.log(chalk.red('\nError writing output to file'));
+      console.dir(err);
+    }
+
+    if (process.env.TERM_PROGRAM == "vscode") {
+      // are we running in Visual Studio Code? Open the file in the editor
+      console.log(chalk.yellow('\nOpening report in Visual Studio Code'));
+      try {
+        await execa('code', [filePath]);
+      } catch (err) {
+        console.error(err);
+        process.exit(1);
+      }
+    }
+  } else {
+    console.log(chalk.yellow('\nNo results to save to file'));
   }
 }
 
 console.log(`\nScan Results`);
 console.log('='.repeat(30));
-console.log(chalk.green('Scanned: ') + result.links.length.toLocaleString() + ' links');
-
-if (config.outputOptions.includes(LinkState.BROKEN)) {
-  const brokenLinksCount = result.links.filter(x => x.state === 'BROKEN');
-  console.log(chalk.red('Broken: ') + brokenLinksCount.length.toLocaleString() + ' links');
-}
-
-if (config.outputOptions.includes(LinkState.SKIPPED)) {
-  const skippedLinksCount = result.links.filter(x => x.state === 'SKIPPED');
-  console.log(chalk.yellow('Skipped: ') + skippedLinksCount.length.toLocaleString() + ' links');
-}
-
+console.log(chalk.green('Found: ') + processedLinks.toLocaleString() + ' links');
+console.log(chalk.green('Scanned: ') + scannedLinks.toLocaleString() + ' links');
+if (config.outputOptions.includes(LinkState.BROKEN))
+  console.log(chalk.red('Broken: ') + brokenLinks.toLocaleString() + ' links');
+if (config.outputOptions.includes(LinkState.SKIPPED))
+  console.log(chalk.yellow('Skipped: ') + skippedLinks.toLocaleString() + ' links');
 console.log('='.repeat(30));
 
 // Have to do this because some requests are still in progress, 

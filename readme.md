@@ -95,6 +95,7 @@ The following table lists the available configuration options (and associated pr
 | Option                        | Description |
 | ----------------------------- | ----------- |
 | Target Site URL               | The target URL you want scanned for links; the utility will start there and work through all of the links on the page. <br />Default: http://localhost:8080 |
+| Test internal links only | Skips all external links, any link that doesn't start with the *Target Site URL*  or `/` |
 | Number of Concurrent Requests | Specifies the number of simultaneous requests the server will send while validating links. The utility can spawn multiple requests while validating links, which creates issues for you if the target server has code in place to block rapid repeated access (like in a [DDOS](https://en.wikipedia.org/wiki/Denial-of-service_attack) or other attack). If the web application you're scanning runs locally or on a server that you know doesn't block or delay repeated requests, then use a value of 100 or more if you want. For public servers and/or sites you don't own, use the default value of 10 or less.<br />Default: 10 |
 | Timeout Value                 | Number of milliseconds the utility waits on an unresponsive site before failing. Values between 5000 (5 seconds) and 10000 (10 seconds) should be sufficient, but you may want to increase this due to slower servers.<br />Default: 5000 |
 | Output Options                | The URL validation library used internally by the utility categorizes validated links in three ways: OK (HTTP status code 200), Broken (any other status code), and Skipped (for non HTTP links such as `tel` or `mailto`). This is a multiple choice selection that defaults to **Broken**. You can toggle any of the three options to control the program's output to the console and results file.<br />**Skipped** links aren't that interesting as the option only lists links that the validation library ignores by default. If you enable **OK**, you'll see the list of all links validated good (OK - status code 200) by the utility.<br />Default: Broken |
@@ -118,6 +119,7 @@ Here's an example of the complete utility output:
 by John M. Wargo (https://johnwargo.com)
 
 √ Target site URL ... http://localhost:8080
+√ Test internal links only? (No for internal and external links) ... yes
 √ Number of concurrent requests ... 100
 √ Timeout value (in milliseconds) ... 10000
 √ Select output options » Broken, Skipped
@@ -158,6 +160,7 @@ by John M. Wargo (https://johnwargo.com)
 
 ? Target site URL » http://localhost:8080
 √ Target site URL ... http://localhost:8080
+√ Test internal links only? (No for internal and external links) ... yes
 √ Number of concurrent requests; must be greater than zero ... 10
 √ Timeout value (in milliseconds); must be greater than zero ... 5000
 √ Select output options » Broken
