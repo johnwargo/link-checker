@@ -1,6 +1,6 @@
 # Change Log
 
-## v0.0.6 (January 27, 2025)
+## v0.0.7 (January 27, 2025)
 
 + Added flag for checking internal links only
 
