@@ -243,7 +243,7 @@ let checkerOptions = {
 };
 if (config.internalLinksOnly) {
     checkerOptions.linksToSkip = (url) => {
-        return !url.startsWith(config.siteUrl) && !url.startsWith('/') && !url.startsWith('/feed');
+        return !url.startsWith(config.siteUrl) && !url.startsWith('/');
     };
 }
 console.log(chalk.yellow('\nStarting scan...\n'));

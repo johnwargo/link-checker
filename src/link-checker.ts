@@ -15,9 +15,6 @@
 // Based on: https://www.seancdavis.com/posts/using-nodejs-to-check-for-broken-links/
 // That got me started, then I pulled in more code from the docs and wrote my own
 
-// TODO: Local only flag (don't check external links)
-// TODO: Automated mode
-
 import boxen from 'boxen';
 import chalk from 'chalk';
 import { execa } from 'execa';
