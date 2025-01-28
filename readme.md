@@ -135,7 +135,8 @@ Results successfully written to file: D:\dev\links\link-checker-results.md
 
 Scan Results
 ==============================
-Scanned: 1,079 links
+Found: 5,785 links
+Scanned: 4,166 links
 Broken: 42 links
 Skipped: 23 links
 ==============================
@@ -192,7 +193,8 @@ Opening report in Visual Studio Code
 
 Scan Results
 ==============================
-Scanned: 250 links
+Found: 5,785 links
+Scanned: 4,166 links
 Broken: 5 links
 ==============================
 ```
