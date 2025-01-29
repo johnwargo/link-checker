@@ -342,8 +342,6 @@ let checkerOptions: any = {
 };
 // Added v0.0.7 & v0.0.8
 if (config.internalLinksOnly || config.skipFeeds) {
-  /* linksToSkip (array | function) - An array of regular expression strings that should be skipped, OR an async function that's called for each link with the link URL as its only argument. Return a Promise that resolves to true to skip the link or false to check it. */
-
   // Added v0.0.8
   // empty array of urls to skip
   let skipArray: string[] = [];
@@ -362,11 +360,18 @@ if (config.internalLinksOnly || config.skipFeeds) {
     skipArray.push(`${config.siteUrl}/atom`);
   }
 
-  checkerOptions.linksToSkip = (url: string) => {
-    // Skip anything that isn't an internal link
+  console.dir(skipArray);
+
+  /* linksToSkip (array | function) - An array of regular expression strings that should be skipped, OR an async function that's called for each link with the link URL as its only argument. Return a Promise that resolves to true to skip the link or false to check it. */
+  checkerOptions.linksToSkip = async (url: string) => {
+    return new Promise((resolve) => {
+      // Skip anything that isn't an internal link
+      resolve(!skipArray.some(skipStr => url.toLowerCase().startsWith(skipStr.toLowerCase())));
+    });
+
     // return !url.startsWith(config.siteUrl) && !url.startsWith('/');
-    let res: string[] = skipArray.filter(s => url.startsWith(s));
-    return res.length < 1;
+    // let res: string[] = skipArray.filter(s => url.startsWith(s));
+    // return skipArray.some(urlPart => url.startsWith(urlPart));
   }
 }
 

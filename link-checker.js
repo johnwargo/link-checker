@@ -262,10 +262,10 @@ if (config.internalLinksOnly || config.skipFeeds) {
         skipArray.push(`${config.siteUrl}/atom`);
     }
     console.dir(skipArray);
-    process.exit(1);
-    checkerOptions.linksToSkip = (url) => {
-        let res = skipArray.filter(s => url.startsWith(s));
-        return res.length < 1;
+    checkerOptions.linksToSkip = async (url) => {
+        return new Promise((resolve) => {
+            resolve(!skipArray.some(skipStr => url.toLowerCase().startsWith(skipStr.toLowerCase())));
+        });
     };
 }
 console.log(chalk.yellow('\nStarting scan...\n'));
