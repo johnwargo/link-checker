@@ -32,6 +32,7 @@ type ConfigObject = {
   timeoutValue: number;
   outputOptions: LinkState[];
   saveToFile: boolean;
+  skipFeeds: boolean;
   outputFile?: string;
   outputType?: OutputFormat;
 };
@@ -78,6 +79,7 @@ const defaultConfigObject: ConfigObject = {
   timeoutValue: DEFAULT_TIMEOUT,
   outputOptions: [LinkState.BROKEN],
   saveToFile: true,
+  skipFeeds: true,
   outputFile: 'link-checker-results',
   outputType: OutputFormat.JSON
 };
@@ -102,6 +104,11 @@ const prompt1: PromptObject[] = [
     type: 'confirm',
     name: 'internalLinksOnly',
     message: 'Test internal links only? (No for internal and external links)',
+    initial: true
+  }, {
+    type: 'confirm',
+    name: 'skipFeeds',
+    message: 'Skip feed URLs (RSS, Atom, etc.)?',
     initial: true
   }, {
     type: 'number',
@@ -326,19 +333,40 @@ if (saveConfig) {
   process.exit(0);
 }
 
-// Added v0.0.6
+// Added v0.0.7
 let checkerOptions: any = {
   concurrency: config.concurrentRequests,
   path: config.siteUrl,
   recurse: true,
   timeout: config.timeoutValue
 };
-// Added v0.0.6
-if (config.internalLinksOnly) {
+// Added v0.0.7 & v0.0.8
+if (config.internalLinksOnly || config.skipFeeds) {
   /* linksToSkip (array | function) - An array of regular expression strings that should be skipped, OR an async function that's called for each link with the link URL as its only argument. Return a Promise that resolves to true to skip the link or false to check it. */
+
+  // Added v0.0.8
+  // empty array of urls to skip
+  let skipArray: string[] = [];
+  if (config.internalLinksOnly) {
+    // add the internal links
+    skipArray.push(config.siteUrl);
+    skipArray.push('/');
+  }
+  if (config.skipFeeds) {
+    // add the feed URLs
+    skipArray.push('/feed');
+    skipArray.push(`${config.siteUrl}/feed`);
+    skipArray.push('/rss');
+    skipArray.push(`${config.siteUrl}/rss`);
+    skipArray.push('/atom');
+    skipArray.push(`${config.siteUrl}/atom`);
+  }
+
   checkerOptions.linksToSkip = (url: string) => {
     // Skip anything that isn't an internal link
-    return !url.startsWith(config.siteUrl) && !url.startsWith('/');
+    // return !url.startsWith(config.siteUrl) && !url.startsWith('/');
+    let res: string[] = skipArray.filter(s => url.startsWith(s));
+    return res.length < 1;
   }
 }
 

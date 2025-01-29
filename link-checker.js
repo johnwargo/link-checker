@@ -34,6 +34,7 @@ const defaultConfigObject = {
     timeoutValue: DEFAULT_TIMEOUT,
     outputOptions: [LinkState.BROKEN],
     saveToFile: true,
+    skipFeeds: true,
     outputFile: 'link-checker-results',
     outputType: OutputFormat.JSON
 };
@@ -52,6 +53,11 @@ const prompt1 = [
         type: 'confirm',
         name: 'internalLinksOnly',
         message: 'Test internal links only? (No for internal and external links)',
+        initial: true
+    }, {
+        type: 'confirm',
+        name: 'skipFeeds',
+        message: 'Skip feed URLs (RSS, Atom, etc.)?',
         initial: true
     }, {
         type: 'number',
@@ -241,9 +247,25 @@ let checkerOptions = {
     recurse: true,
     timeout: config.timeoutValue
 };
-if (config.internalLinksOnly) {
+if (config.internalLinksOnly || config.skipFeeds) {
+    let skipArray = [];
+    if (config.internalLinksOnly) {
+        skipArray.push(config.siteUrl);
+        skipArray.push('/');
+    }
+    if (config.skipFeeds) {
+        skipArray.push('/feed');
+        skipArray.push(`${config.siteUrl}/feed`);
+        skipArray.push('/rss');
+        skipArray.push(`${config.siteUrl}/rss`);
+        skipArray.push('/atom');
+        skipArray.push(`${config.siteUrl}/atom`);
+    }
+    console.dir(skipArray);
+    process.exit(1);
     checkerOptions.linksToSkip = (url) => {
-        return !url.startsWith(config.siteUrl) && !url.startsWith('/');
+        let res = skipArray.filter(s => url.startsWith(s));
+        return res.length < 1;
     };
 }
 console.log(chalk.yellow('\nStarting scan...\n'));
