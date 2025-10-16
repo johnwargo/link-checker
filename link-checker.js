@@ -6,19 +6,22 @@ import fs from 'fs';
 import { LinkChecker } from "linkinator";
 import path from 'path';
 import prompts from 'prompts';
-import { fileURLToPath } from 'url';
+import url from 'url';
+
 var LinkState;
 (function (LinkState) {
     LinkState["BROKEN"] = "BROKEN";
     LinkState["SKIPPED"] = "SKIPPED";
     LinkState["OK"] = "OK";
 })(LinkState || (LinkState = {}));
+
 var OutputFormat;
 (function (OutputFormat) {
     OutputFormat[OutputFormat["JSON"] = 0] = "JSON";
     OutputFormat[OutputFormat["MARKDOWN"] = 1] = "MARKDOWN";
     OutputFormat[OutputFormat["TXT"] = 2] = "TXT";
 })(OutputFormat || (OutputFormat = {}));
+
 const checker = new LinkChecker();
 const APP_NAME = 'Link Checker';
 const APP_AUTHOR = 'by John M. Wargo (https://johnwargo.com)';
@@ -27,6 +30,7 @@ const DEFAULT_URL = 'http://localhost:8080';
 const DEFAULT_CONCURRENT_REQUESTS = 10;
 const DEFAULT_OUTPUT_FILE_ROOT = 'link-checker-results';
 const DEFAULT_TIMEOUT = 5000;
+
 const defaultConfigObject = {
     siteUrl: DEFAULT_URL,
     concurrentRequests: DEFAULT_CONCURRENT_REQUESTS,
@@ -34,14 +38,17 @@ const defaultConfigObject = {
     timeoutValue: DEFAULT_TIMEOUT,
     outputOptions: [LinkState.BROKEN],
     saveToFile: true,
+    skipFeeds: true,
     outputFile: 'link-checker-results',
     outputType: OutputFormat.JSON
 };
+
 const OutputMap = {
     OK: chalk.green("OK"),
     BROKEN: chalk.red("BROKEN"),
     SKIPPED: chalk.yellow("SKIPPED"),
 };
+
 const prompt1 = [
     {
         type: 'text',
@@ -52,6 +59,11 @@ const prompt1 = [
         type: 'confirm',
         name: 'internalLinksOnly',
         message: 'Test internal links only? (No for internal and external links)',
+        initial: true
+    }, {
+        type: 'confirm',
+        name: 'skipFeeds',
+        message: 'Skip feed URLs (RSS, Atom, etc.)?',
         initial: true
     }, {
         type: 'number',
@@ -80,6 +92,7 @@ const prompt1 = [
         initial: true
     }
 ];
+
 const prompt2 = [
     {
         type: 'text',
@@ -98,14 +111,15 @@ const prompt2 = [
         ]
     }
 ];
-checker.on('pagestart', (url) => {
-    console.log(`${chalk.blue('Scanning')}: ${url}`);
-});
+
 checker.on('link', (res) => {
     function logLinkDetails(res) {
         var statusStr = res.status?.toString().padStart(3, ' ');
-        console.log(`${OutputMap[res.state]} (${statusStr}): ${res.url}`);
+        // Get the parent URL for console output, or an empty string if none.
+        const parentUrl = res.parent ? ` (Found on: ${res.parent})` : '';
+        console.log(`${OutputMap[res.state]} (${statusStr}): ${res.url}${parentUrl}`);
     }
+
     switch (res.state) {
         case LinkState.BROKEN:
             if (config.outputOptions.includes(LinkState.BROKEN))
@@ -121,15 +135,22 @@ checker.on('link', (res) => {
             break;
     }
 });
+
+checker.on('pagestart', (url) => {
+    console.log(`${chalk.blue('Scanning')}: ${url}`);
+});
+
 checker.on('retry', (details) => {
     var resStr = chalk.yellow('Retrying:');
     resStr += ` ${details.url} (${details.status}) in ${details.secondsUntilRetry} seconds`;
     console.log(resStr);
 });
+
 const onCancelPrompt = () => {
     console.log(chalk.red('\nOperation cancelled by user!'));
     process.exit(0);
 };
+
 function isValidHttpUrl(urlStr) {
     try {
         const theUrl = new URL(urlStr);
@@ -139,10 +160,12 @@ function isValidHttpUrl(urlStr) {
         return false;
     }
 }
+
 function logConfigError(errStr) {
     console.log(`\n${chalk.red('Error:')} ${errStr}`);
     process.exit(1);
 }
+
 function displayHelpAndExit(targetFolder) {
     const filePath = path.join(targetFolder, 'help.txt');
     try {
@@ -155,50 +178,67 @@ function displayHelpAndExit(targetFolder) {
     }
     process.exit(0);
 }
+
 function writeFileSection(outputFormat, sectionHeader, section) {
     var sectionText = '';
     var linksArray = result.links.filter(x => x.state === section);
     if (linksArray.length < 1)
         return '';
+    
+    // Sort by link URL
     linksArray = linksArray.sort((a, b) => a.url.localeCompare(b.url));
+
     switch (outputFormat) {
         case OutputFormat.MARKDOWN:
             sectionText = `## ${sectionHeader}\n\n`;
-            sectionText += '| Status | URL |\n';
-            sectionText += '|--------|-----|\n';
+            sectionText += '| Status | URL | Found On |\n';
+            sectionText += '|--------|-----|----------|\n';
             for (var link of linksArray) {
-                sectionText += `| ${link.status?.toString().padStart(3, ' ')} | ${link.url} |\n`;
+                // Get the parent URL or an empty string if none
+                const parentUrl = link.parent ? link.parent : '';
+                sectionText += `| ${link.status?.toString().padStart(3, ' ')} | ${link.url} | ${parentUrl} |\n`;
             }
             break;
         case OutputFormat.TXT:
             sectionText = sectionHeader + '\n';
             sectionText += '-'.repeat(sectionHeader.length + 5) + '\n';
             for (var link of linksArray) {
-                sectionText += `(${link.status?.toString().padStart(3, ' ')}) ${link.url}\n`;
+                // Get the parent URL or a descriptive string if none
+                const parentUrl = link.parent ? ` (Found on: ${link.parent})` : '';
+                sectionText += `(${link.status?.toString().padStart(3, ' ')}) ${link.url}${parentUrl}\n`;
             }
             break;
     }
     sectionText += '\n';
     return sectionText;
 }
+
 console.log(boxen(APP_NAME, { padding: 1 }));
 console.log(`\n${APP_AUTHOR}\n`);
-const __filename = fileURLToPath(import.meta.url);
+
+const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 const myArgs = process.argv.slice(2);
+
 if (myArgs.includes('-?') || myArgs.includes('/?'))
     displayHelpAndExit(__dirname);
+
 const debugMode = myArgs.includes('-d');
 if (debugMode)
     console.log(chalk.yellow('Debug Mode enabled'));
+
 const saveConfig = myArgs.includes('-s');
 const autoMode = myArgs.includes('-a');
+
 if (saveConfig && autoMode) {
     console.log(chalk.red('\nError: -s and -a flags are mutually exclusive'));
     process.exit(1);
 }
+
 var config = {};
 var configAlt = {};
+
 if (autoMode) {
     console.log(chalk.yellow('Auto mode enabled'));
     const configFilePath = path.join(process.cwd(), CONFIG_FILE_NAME);
@@ -217,10 +257,12 @@ else {
         config = { ...config, ...configAlt };
     }
 }
+
 if (debugMode) {
     console.log(chalk.yellow('\nConfiguration Object:'));
     console.dir(config);
 }
+
 if (!isValidHttpUrl(config.siteUrl))
     logConfigError(`${config.siteUrl} is not a valid URL`);
 if (config.concurrentRequests < 1)
@@ -229,36 +271,70 @@ if (config.timeoutValue < 1)
     logConfigError('Timeout value must be greater than 0');
 if (config.outputOptions.length < 1)
     logConfigError('You must select at least one output option');
+
 if (saveConfig) {
     const configFilePath = path.join(process.cwd(), CONFIG_FILE_NAME);
     console.log(chalk.yellow(`\nSaving configuration to ${configFilePath}\n`));
     fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2));
     process.exit(0);
 }
+
 let checkerOptions = {
     concurrency: config.concurrentRequests,
     path: config.siteUrl,
     recurse: true,
     timeout: config.timeoutValue
 };
-if (config.internalLinksOnly) {
-    checkerOptions.linksToSkip = (url) => {
-        return !url.startsWith(config.siteUrl) && !url.startsWith('/');
+
+if (config.internalLinksOnly || config.skipFeeds) {
+    let skipArray = [];
+    if (config.skipFeeds) {
+        skipArray.push('/feed');
+        skipArray.push(`${config.siteUrl}/feed`);
+        skipArray.push('/rss');
+        skipArray.push(`${config.siteUrl}/rss`);
+        skipArray.push('/atom');
+        skipArray.push(`${config.siteUrl}/atom`);
+    }
+
+    if (debugMode)
+        console.dir(skipArray);
+
+    checkerOptions.linksToSkip = async (url) => {
+        return new Promise((resolve) => {
+            let result;
+            if (config.internalLinksOnly) {
+                result = !url.startsWith(config.siteUrl) && !url.startsWith('/');
+            }
+            else {
+                result = false;
+            }
+            if (config.skipFeeds) {
+                result = result || skipArray.some(skipStr => url.toLowerCase().startsWith(skipStr.toLowerCase()));
+            }
+            resolve(result);
+        });
     };
 }
+
 console.log(chalk.yellow('\nStarting scan...\n'));
+
 const result = await checker.check(checkerOptions);
+
 const processedLinks = result.links.length;
 const scannedLinks = result.links.filter(x => x.state !== 'SKIPPED').length;
 const brokenLinks = result.links.filter(x => x.state === 'BROKEN').length;
 const skippedLinks = result.links.filter(x => x.state === 'SKIPPED').length;
+
 if (config.saveToFile) {
     let saveFile = config.outputOptions.includes(LinkState.OK) && processedLinks > 0;
     saveFile = saveFile || config.outputOptions.includes(LinkState.BROKEN) && brokenLinks > 0;
     saveFile = saveFile || config.outputOptions.includes(LinkState.SKIPPED) && skippedLinks > 0;
+
     if (saveFile) {
         var ext = 'UNKNOWN';
         var outputBody = '';
+
         switch (config.outputType) {
             case OutputFormat.JSON:
                 ext = '.json';
@@ -287,9 +363,11 @@ if (config.saveToFile) {
                 outputBody += '---\n\nReport created by Link Checker (https://github.com/johnwargo/link-checker) by John M. Wargo.\n';
                 break;
         }
+
         const filePath = path.join(process.cwd(), config.outputFile + ext);
         if (debugMode)
             console.log(chalk.blue('Writing output to file...'));
+
         try {
             fs.writeFileSync(filePath, outputBody);
             console.log(chalk.green('\nResults successfully written to file: ') + filePath);
@@ -298,6 +376,7 @@ if (config.saveToFile) {
             console.log(chalk.red('\nError writing output to file'));
             console.dir(err);
         }
+
         if (process.env.TERM_PROGRAM == "vscode") {
             console.log(chalk.yellow('\nOpening report in Visual Studio Code'));
             try {
@@ -313,6 +392,7 @@ if (config.saveToFile) {
         console.log(chalk.yellow('\nNo results to save to file'));
     }
 }
+
 console.log(`\nScan Results`);
 console.log('='.repeat(30));
 console.log(chalk.green('Found: ') + processedLinks.toLocaleString() + ' links');
@@ -322,4 +402,5 @@ if (config.outputOptions.includes(LinkState.BROKEN))
 if (config.outputOptions.includes(LinkState.SKIPPED))
     console.log(chalk.yellow('Skipped: ') + skippedLinks.toLocaleString() + ' links');
 console.log('='.repeat(30));
+
 process.exit(0);
