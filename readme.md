@@ -1,5 +1,7 @@
 A simple node.js-based terminal (command-line) utility that validates links on a local or remote web site. You provide the target URL and answer a couple of questions and the utility scans all links on the target site (recursively) and reports the results to the console. You can even write the results to a file in json, markdown and text format for further analysis.
 
+> This module is a [TypeScript](https://www.typescriptlang.org/) project, so if you want to propose any changes to the project through a pull request, make sure you modify the project's `src/link-checker.ts` file, not the `link-checker.js` file in the root of the project and test your changes using `npm start` (which invokes the TypeScript compiler).
+
 <!-- TOC -->
 
 - [Features](#features)
