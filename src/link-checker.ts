@@ -232,8 +232,8 @@ function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, sec
   if (linksArray.length < 1) return '';
 
   // sort the array
+  // TODO: Sort results array by source page
   linksArray = linksArray.sort((a, b) => a.url.localeCompare(b.url));
-  // linksArray = linksArray.sort((a, b) => a.parent.localeCompare(b.parent));
 
   switch (outputFormat) {
     case OutputFormat.MARKDOWN:
