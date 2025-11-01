@@ -17,7 +17,7 @@ A simple node.js-based terminal (command-line) utility that validates links on a
 
 <!-- /TOC -->
 
-> This module is a [TypeScript](https://www.typescriptlang.org/) project, so if you want to propose any changes to the project through a pull request, make sure you modify the project's `src/link-checker.ts` file, not the `link-checker.js` file in the root of the project and test your changes using `npm start` (which invokes the TypeScript compiler).
+> This module is a [TypeScript](https://www.typescriptlang.org/) project, so if you want to propose any changes to the project through a pull request, make sure you modify the project's `src/link-checker.ts` file, not the `link-checker.js` file in the root of the project. Also, make sure you test your changes using `npm start` (which invokes the TypeScript compiler).
 
 ## Features
 
