@@ -163,7 +163,9 @@ checker.on('link', (res: LinkResult) => {
 
   function logLinkDetails(res: LinkResult) {
     var statusStr = res.status?.toString().padStart(3, ' ');
-    console.log(`${OutputMap[res.state]} (${statusStr}): ${res.url}`);
+    // v0.0.8 show parent URL
+    var parentUrl = res.parent ? ` (Source: ${res.parent})` : '';
+    console.log(`${OutputMap[res.state]} (${statusStr}): ${res.url}${parentUrl}`);
   }
 
   switch (res.state) {
@@ -221,7 +223,7 @@ function displayHelpAndExit(targetFolder: string) {
   process.exit(0);
 }
 
-function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, section: LinkState): string {
+function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, section: LinkState, siteUrlLength: number): string {
   var sectionText: string = '';
 
   // get the links array for the section
@@ -230,22 +232,27 @@ function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, sec
   if (linksArray.length < 1) return '';
 
   // sort the array
-  linksArray = linksArray.sort((a, b) => a.url.localeCompare(b.url));
+  linksArray = linksArray.sort((a, b) => a.url.localeCompare(b.url));  
+  // linksArray = linksArray.sort((a, b) => a.parent.localeCompare(b.parent));
 
   switch (outputFormat) {
     case OutputFormat.MARKDOWN:
       sectionText = `## ${sectionHeader}\n\n`;
-      sectionText += '| Status | URL |\n';
-      sectionText += '|--------|-----|\n';
+      sectionText += '| Status | URL | Source |\n';
+      sectionText += '|--------|-----|--------|\n';
       for (var link of linksArray) {
-        sectionText += `| ${link.status?.toString().padStart(3, ' ')} | ${link.url} |\n`;
+        //@ts-ignore
+        var sourceUrl = link.parent.slice(siteUrlLength);
+        sectionText += `| ${link.status?.toString().padStart(3, ' ')} | ${link.url} | ${sourceUrl} |\n`;
       }
       break;
     case OutputFormat.TXT:
       sectionText = sectionHeader + '\n';
       sectionText += '-'.repeat(sectionHeader.length + 5) + '\n';
       for (var link of linksArray) {
-        sectionText += `(${link.status?.toString().padStart(3, ' ')}) ${link.url}\n`;
+        //@ts-ignore
+        var sourceUrl = link.parent.slice(siteUrlLength);
+        sectionText += `(${link.status?.toString().padStart(3, ' ')}) ${link.url} <-- ${sourceUrl}\n`;
       }
       break;
   }
@@ -353,6 +360,8 @@ const skippedLinks = result.links.filter(x => x.state === 'SKIPPED').length;
 
 if (config.saveToFile) {
 
+  const siteUrlLength = config.siteUrl.length;
+  
   let saveFile: boolean = config.outputOptions.includes(LinkState.OK) && processedLinks > 0;
   saveFile = saveFile || config.outputOptions.includes(LinkState.BROKEN) && brokenLinks > 0;
   saveFile = saveFile || config.outputOptions.includes(LinkState.SKIPPED) && skippedLinks > 0;
@@ -368,18 +377,18 @@ if (config.saveToFile) {
         break;
       case OutputFormat.MARKDOWN:
         ext = '.md';
-        outputBody = `# Link Checker Results\n\n**Created:** ${new Date().toLocaleString()}\n\n`;
-        if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Broken Links', LinkState.BROKEN);
-        if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Skipped Links', LinkState.SKIPPED);
-        if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'OK Links', LinkState.OK);
+        outputBody = `# Link Checker Results\n\n**Created:** ${new Date().toLocaleString()}\n**Site:** ${config.siteUrl}\n\n`;
+        if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Broken Links', LinkState.BROKEN, siteUrlLength);
+        if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'Skipped Links', LinkState.SKIPPED, siteUrlLength);
+        if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.MARKDOWN, 'OK Links', LinkState.OK, siteUrlLength);
         outputBody += '---\n\nReport created by <a href="https://github.com/johnwargo/link-checker" target="_blank">Link Checker</a> by John M. Wargo.\n';
         break;
       case OutputFormat.TXT:
         ext = '.txt';
-        outputBody = `Link Checker Results\n${'='.repeat(20)}\n\nCreated: ${new Date().toLocaleString()}\n\n`;
-        if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.TXT, 'Broken Links', LinkState.BROKEN);
-        if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.TXT, 'Skipped Links', LinkState.SKIPPED);
-        if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.TXT, 'OK Links', LinkState.OK);
+        outputBody = `Link Checker Results\n${'='.repeat(20)}\n\nCreated: ${new Date().toLocaleString()}\nSite: ${config.siteUrl}\n\n`;
+        if (config.outputOptions.includes(LinkState.BROKEN)) outputBody += writeFileSection(OutputFormat.TXT, 'Broken Links', LinkState.BROKEN, siteUrlLength);
+        if (config.outputOptions.includes(LinkState.SKIPPED)) outputBody += writeFileSection(OutputFormat.TXT, 'Skipped Links', LinkState.SKIPPED, siteUrlLength);
+        if (config.outputOptions.includes(LinkState.OK)) outputBody += writeFileSection(OutputFormat.TXT, 'OK Links', LinkState.OK, siteUrlLength);
         outputBody += '---\n\nReport created by Link Checker (https://github.com/johnwargo/link-checker) by John M. Wargo.\n';
         break;
     }

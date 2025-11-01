@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.0.8 (November 1, 2025)
+
+Added source URL to the output; based on a PR from @joeinnes.
+
 ## v0.0.7 (January 27, 2025)
 
 + Added flag for checking internal links only
