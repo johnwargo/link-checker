@@ -232,7 +232,7 @@ function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, sec
   if (linksArray.length < 1) return '';
 
   // sort the array
-  linksArray = linksArray.sort((a, b) => a.url.localeCompare(b.url));  
+  linksArray = linksArray.sort((a, b) => a.url.localeCompare(b.url));
   // linksArray = linksArray.sort((a, b) => a.parent.localeCompare(b.parent));
 
   switch (outputFormat) {
@@ -361,7 +361,7 @@ const skippedLinks = result.links.filter(x => x.state === 'SKIPPED').length;
 if (config.saveToFile) {
 
   const siteUrlLength = config.siteUrl.length;
-  
+
   let saveFile: boolean = config.outputOptions.includes(LinkState.OK) && processedLinks > 0;
   saveFile = saveFile || config.outputOptions.includes(LinkState.BROKEN) && brokenLinks > 0;
   saveFile = saveFile || config.outputOptions.includes(LinkState.SKIPPED) && skippedLinks > 0;
