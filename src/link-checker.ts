@@ -66,6 +66,8 @@ const checker = new LinkChecker();
 const APP_NAME = 'Link Checker';
 const APP_AUTHOR = 'by John M. Wargo (https://johnwargo.com)';
 const CONFIG_FILE_NAME = 'link-checker-config.json';
+// best to use this when testing. If you run this against a production 
+// site, the server will likely block you for making too many requests
 const DEFAULT_URL = 'http://localhost:8080';
 const DEFAULT_CONCURRENT_REQUESTS = 10;
 const DEFAULT_OUTPUT_FILE_ROOT = 'link-checker-results';
@@ -160,7 +162,7 @@ checker.on('pagestart', (url: string) => {
 });
 
 checker.on('link', (res: LinkResult) => {
-
+         
   function logLinkDetails(res: LinkResult) {
     var statusStr = res.status?.toString().padStart(3, ' ');
     // v0.0.8 show parent URL
