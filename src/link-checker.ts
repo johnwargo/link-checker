@@ -243,8 +243,7 @@ function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, sec
       sectionText += '| Status | URL | Source |\n';
       sectionText += '|--------|-----|--------|\n';
       for (var link of linksArray) {
-        //@ts-ignore
-        var sourceUrl = link.parent.slice(siteUrlLength);
+        var sourceUrl = link.parent?.slice(siteUrlLength) ?? '';
         sectionText += `| ${link.status?.toString().padStart(3, ' ')} | ${link.url} | ${sourceUrl} |\n`;
       }
       break;
@@ -252,8 +251,7 @@ function writeFileSection(outputFormat: OutputFormat, sectionHeader: string, sec
       sectionText = sectionHeader + '\n';
       sectionText += '-'.repeat(sectionHeader.length + 5) + '\n';
       for (var link of linksArray) {
-        //@ts-ignore
-        var sourceUrl = link.parent.slice(siteUrlLength);
+        var sourceUrl = link.parent?.slice(siteUrlLength) ?? '';
         sectionText += `(${link.status?.toString().padStart(3, ' ')}) ${link.url} <-- ${sourceUrl}\n`;
       }
       break;
