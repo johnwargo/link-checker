@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.0.10 (December 14, 2025)
+
+Fixed issue I previously skirted with a `//@ts-check`: link parent being undefined. It now checks for  undefined and returns `''` instead when undefined.
+
 ## v0.0.8 (November 1, 2025)
 
 Added source URL to the output; based on a PR from @joeinnes.
